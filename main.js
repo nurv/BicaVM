@@ -1,5 +1,7 @@
+
 include("linearDataStream.js");
 include("constantPool.js");
+
 
 function slurpFile (filename, fa) {
     var xmlHttpRequest, response, result ;
@@ -36,6 +38,7 @@ function slurpFile (filename, fa) {
     return result;
 };
 log = function (msg){
+    write(msg);
     if (console){
         console.log(msg);
     }
@@ -87,17 +90,19 @@ ConstantPoolStruct = function (tag,info){
 ClassDefinition = function (file){
     var dataStream = new DataStream(slurpFile(file)[1]);
     this.magic = dataStream.getU4();
-    this.magic == 0xCAFEBABE || alert("Invalid Class Magic");
+    if (this.magic != 0xCAFEBABE){
+        throw "Invalid Class Magic (" + this.magic + ")" ;
+    }
     this.minorVersion = dataStream.getU2();
     this.majorVersion = dataStream.getU2();
     this.constantPoolCount = dataStream.getU2();
     this.constantPool = [];
-    for(var i = 1; i <= this.constantPoolCount; i++){
+    for(var i = 1; i <= this.constantPoolCount; i++){        
         var tag = dataStream.getU1();
-	var alloc = allocConstEntry(tag);
+//        new ConstantPoolStruct(tag,0);
+        var alloc = allocConstEntry(tag);
 	alloc.read(dataStream);
-        var info = new DataView(x, 10  + (i-1) * (1 + 1) + 1,1).getUint8(0);
-        this.constantPool[(i-1)] = new ConstantPoolStruct(tag,info);
+        this.constantPool[(i-1)] = alloc;
     }
 }
 
