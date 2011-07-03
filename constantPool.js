@@ -236,7 +236,6 @@ var ConstantPool = function(dStream){
     this.constantPool = [];
     for(var i = 1; i < this.constantPoolCount; i++){        
         var tag = dStream.getU1();
-        log(constTagName(tag));
         var alloc = allocConstEntry(tag);
 	alloc.read(dStream);
         this.constantPool[(i-1)] = alloc;
@@ -296,6 +295,9 @@ var constTagName = function (info){
 }
 
 var ConstantPoolRef = function(index, constantPool, expected){
+    if (index-1 < 0 || index-1 >= constantPool.constantPool.length){
+        throw "ConstantPoolRef: ref out of bounds: " + (index-1).toString() + ", length: " + constantPool.constantPool.length;
+    }
     var result = constantPool.constantPool[index - 1];
     if (expected && result.id != expected){
         throw "ConstantPoolRef: ref was expected to be " + constTagName(expected) + " but at " + index + " there's a " + constTagName(result.id);
