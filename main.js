@@ -2,6 +2,17 @@
 include("linearDataStream.js");
 include("constantPool.js");
 
+// access flags DEFINE
+var ACC_PUBLIC    = 0x0001; // Declared public; may be accessed from outside its package.
+var ACC_PRIVATE	  = 0x0002; // Declared private; usable only within the defining class.
+var ACC_PROTECTED = 0x0004; // Declared protected; may be accessed within subclasses.
+var ACC_STATIC	  = 0x0008; // Declared static.
+var ACC_FINAL     = 0x0010; // Declared final; no subclasses allowed.
+var ACC_SUPER     = 0x0020; // Treat superclass methods specially when invoked by the invokespecial instruction.
+var ACC_VOLATILE  = 0x0040; // Declared volatile; cannot be cached.
+var ACC_INTERFACE = 0x0200; // Is an interface, not a class.
+var ACC_ABSTRACT  = 0x0400; // Declared abstract; may not be instantiated.
+var ACC_TRANSIENT = 0x0080; // Declared transient; not written or read by a persistent object manager.
 
 function slurpFile (filename, fa) {
     var xmlHttpRequest, response, result ;
@@ -44,49 +55,6 @@ log = function (msg){
     }
 }
 
-ConstantPoolStruct = function (tag,info){
-    log("0x" + tag.toString(16))
-    switch(tag){
-        case 7:
-        log("Class: "+ info.toString(16));
-        break;
-        case 9:
-        log("FieldRef: "+ info.toString(16));
-        break;
-        case 10:
-        log("MethodRef: "+ info.toString(16));
-        break;
-        case 11:
-        log("InterfaceMethodRef: "+ info.toString(16));
-        break;
-        case 8:
-        log("String: " + info.toString(16));
-        break;
-        case 3:
-        log("Integer: " + info.toString(16));
-        break;
-        case 4:
-        log("Float: " + info.toString(16));
-        break;
-        case 5:
-        log("Long: " + info.toString(16));
-        break;
-        case 6:
-        log("Long: " + info.toString(16));
-        break;
-        case 12:
-        log("NameAndType: " + info.toString(16));
-        break;
-        case 1:
-        log("Utf8: " + info.toString(16));
-        break;
-        default:
-        throw "Unkown tag number 0x" + tag.toString(16);
-    }
-    this.tag = tag;
-    this.info = info;
-};
-
 ClassDefinition = function (file){
     var dataStream = new DataStream(slurpFile(file)[1]);
     this.magic = dataStream.getU4();
@@ -94,16 +62,25 @@ ClassDefinition = function (file){
         throw "Invalid Class Magic (" + this.magic + ")" ;
     }
     this.minorVersion = dataStream.getU2();
+    
     this.majorVersion = dataStream.getU2();
-    this.constantPoolCount = dataStream.getU2();
-    this.constantPool = [];
-    for(var i = 1; i <= this.constantPoolCount; i++){        
-        var tag = dataStream.getU1();
-//        new ConstantPoolStruct(tag,0);
-        var alloc = allocConstEntry(tag);
-	alloc.read(dataStream);
-        this.constantPool[(i-1)] = alloc;
+    if (this.majorVersion > 50 || this.majorVersion < 45){
+        throw "Unsuported java class file format version";
     }
+    this.constantPool = new ConstantPool(dataStream);
+    this.access_flags = dataStream.getU2();
+    
+    this.this_class = ConstantPoolRef(dataStream.getU2(), this.constantPool,CONSTANT_Class);
+    this.super_class = ConstantPoolRef(dataStream.getU2(), this.constantPool,CONSTANT_Class);
+    this.interface_count = dataStream.getU2();
+    
+    // VER: interfaces refs must be classes
+    this.interfaces = [];
+    for(var i=0; i<this.interface_count; i++){
+        this.interfaces[i] = ConstantPoolRef(dataStream.getU2(), this.constantPool,CONSTANT_Class);
+    }
+
+    this.fields_count = dataStream.getU2();
 }
 
 function main (args){

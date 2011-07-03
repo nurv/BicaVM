@@ -57,12 +57,6 @@ var constUtf8 = function(){
     return this;  
 };
 
-
-var constDummy = function(){
-    this.read = function (stream){};
-    return this;
-}
-
 var constInt = function(){
     this.value = null;
     this.id = CONSTANT_Integer;
@@ -103,7 +97,14 @@ var constClass = function(){
     this.name_index = null;
     this.id = CONSTANT_Class;
     this.read = function(dStream){
-        this.name_index = dstream.getU2();
+        this.name_index = dStream.getU2();
+    }
+    this.set_ref = function(pool){
+        var ref = pool[this.name_index - 1];
+        if (!ref || ref.id != CONSTANT_Utf8){
+            throw "Class name index doesn't point to Utf8 in the Constant Pool";
+        }
+        this.name_ref = ref;
     }
 };
 
@@ -111,15 +112,14 @@ var constString = function(){
     this.string_index = null;
     this.id = CONSTANT_String;
     this.read = function(dStream){
-        this.string_index = dstream.getU2();
+        this.string_index = dStream.getU2();
     }
-};
-
-var constString = function(){
-    this.string_index = null;
-    this.id = CONSTANT_String;
-    this.read = function(dStream){
-        this.string_index = dstream.getU2();
+    this.set_ref = function(pool){
+        var ref = pool[this.string_index - 1];
+        if (!ref && ref.id != CONSTANT_Utf8){
+            throw "String index doesn't point to Utf8 in the Constant Pool";
+        }
+        this.string_ref = ref;
     }
 };
 
@@ -130,6 +130,19 @@ var constRef = function(){
         this.class_index = dStream.getU2();
         this.name_and_type_index = dStream.getU2();
     };
+    this.set_ref = function(pool){
+        var classRef = pool[this.class_index - 1];
+        if (!classRef || classRef.id != CONSTANT_Class){
+            throw constTagName(this.id) + " class index doesn't point to Class in the Constant Pool";
+        }
+        this.class_ref = classRef;
+
+        var nAiRef = pool[this.name_and_type_index - 1];
+        if (!nAiRef || nAiRef.id != CONSTANT_NameAndType){
+            throw constTagName(this.id) + " name and type index doesn't point to Name and Type in the Constant Pool, got " + constTagName(nAiRef.id);
+        }
+        this.name_and_type_ref = nAiRef;
+    }
 };
 
 var constFieldRef = function(){
@@ -158,6 +171,19 @@ var constName_and_Type_info = function(){
         this.name_index = dStream.getU2();
         this.descriptor_index = dStream.getU2();
     };
+    this.set_ref = function(pool){
+        var nameRef = pool[this.name_index - 1];
+        if (!nameRef || nameRef.id != CONSTANT_Utf8){
+            throw "Name_and_Type name index doesn't point to Utf8 in the Constant Pool";
+        }
+        this.name_ref = nameRef;
+        
+        var descriptorRef = pool[this.descriptor_index - 1];
+        if(!descriptorRef || descriptorRef.id != CONSTANT_Utf8){
+            throw "Name_and_Type descriptior index doesn't point to Utf8 in the Constant Pool";
+        }
+        this.descriptor_ref = descriptorRef;
+    }
 }
 
 
@@ -199,9 +225,80 @@ var allocConstEntry = function(tag){
       obj = new constName_and_Type_info();
       break;
     default:
-        obj = new constDummy();
-        //throw "allocConstEntry: bad tag value = " + tag;
+        throw "allocConstEntry: bad tag value = " + tag;
       break;
     } // switch
     return obj;
+}
+
+var ConstantPool = function(dStream){
+    this.constantPoolCount = dStream.getU2();
+    this.constantPool = [];
+    for(var i = 1; i < this.constantPoolCount; i++){        
+        var tag = dStream.getU1();
+        log(constTagName(tag));
+        var alloc = allocConstEntry(tag);
+	alloc.read(dStream);
+        this.constantPool[(i-1)] = alloc;
+        if (alloc.id == CONSTANT_Long || alloc.id == CONSTANT_Double) {
+            log("next");
+	    i++;
+	    this.constantPool[(i-1)] = null;
+        }
+    }
+    for(var i = 1; i < this.constantPoolCount; i++){
+        var obj = this.constantPool[(i-1)];
+        if (obj.set_ref){
+            obj.set_ref(this.constantPool);
+        }
+    }
+}
+
+var constTagName = function (info){
+    switch(info){
+        case 7:
+        return "Class";
+        
+        case 9:
+        return "FieldRef";
+        
+        case 10:
+        return "MethodRef";
+        
+        case 11:
+        return "InterfaceMethodRef"; 
+        
+        case 8:
+        return "String";
+        
+        case 3:
+        return "Integer";
+        
+        case 4:
+        return "Float";
+        
+        case 5:
+        return "Long";
+        
+        case 6:
+        return "Double";
+        
+        case 12:
+        return "NameAndType";
+        
+        case 1:
+        return "Utf8";
+   
+        default:
+        return "??0x" + info.toString(16) + "??";
+    }
+    return null;
+}
+
+var ConstantPoolRef = function(index, constantPool, expected){
+    var result = constantPool.constantPool[index - 1];
+    if (expected && result.id != expected){
+        throw "ConstantPoolRef: ref was expected to be " + constTagName(expected) + " but at " + index + " there's a " + constTagName(result.id);
+    }
+    return result;
 }
