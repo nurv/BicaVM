@@ -16,25 +16,42 @@ var constUtf8 = function(){
     this.str = null;
     this.id = CONSTANT_Utf8;
     this.read = function ( dStream ) {
-    var strBuf;
-    var len, charCnt;
-    var one_byte;
-    var one_char;
+        var strBuf;
+        var charCnt;
+        var byte_x,byte_y,byte_z;
+        var result;
+        one_char = '\u0000';
+        this.length = dStream.getU2();
+        strBuf = "";
+        charCnt = 0;
+        while (charCnt < this.length) {
+            byte_x = dStream .getU1();
+            charCnt++;
+            if ((byte_x >> 7) == 1){
+                byte_y = dStream .getU1();
+                charCnt++;
+                if ((byte_x >> 5) == 7){
+                    byte_z = dStream .getU1();
+                    charCnt++;
+                    result = ((byte_x & 0xf) << 12) + ((byte_y & 0x3f) << 6) + (byte_z & 0x3f)
+                }else{
+                    result = ((byte_x & 0x1f) << 6) + (byte_y & 0x3f)
+                }
+            }else{
+                result = byte_x
+            }
+                strBuf += String.fromCharCode(byte_x);
 
-    one_char = '\u0000';
-    len = dStream.getU2();
-    strBuf = "";
-    charCnt = 0;
-    while (charCnt < len) {
-      one_byte = dStream .getU1();
-      charCnt++;
+
+            /*
+      
       if ((one_byte >> 7) == 1) {
 	var tmp;
 
 	// its a multi-byte character
 	tmp = (one_byte & 0x3f);  // Bits 5..0 (six bits)
 	// read the next byte
-	one_byte = dStream .getU1();
+	one_byte = dStream.getU1();
 	charCnt++;
 	tmp = (tmp | ((one_byte & 0x3f) << 6));
 	if ((one_byte >> 6) == 0x2) {
@@ -50,9 +67,9 @@ var constUtf8 = function(){
 	  one_char = one_byte;
       }
       strBuf += String.fromCharCode(one_char);
+*/
     } // while
         this.str = strBuf.toString();
-        log(this.str);
   } // read
     return this;  
 };
@@ -286,12 +303,10 @@ var ConstantPoolRef = function(index, constantPool, expected){
 var ConstantPool = function(dStream){
     this.constantPoolCount = dStream.getU2();
     this.constantPool = [];
-   log(this.constantPoolCount);
     for(var i = 1; i < this.constantPoolCount; i++){        
         var tag = dStream.getU1();
         var alloc = allocConstEntry(tag);
 	alloc.read(dStream);
-       log(i + " : " + constTagName(alloc.id));
         this.constantPool[(i-1)] = alloc;
         if (alloc.id == CONSTANT_Long || alloc.id == CONSTANT_Double) {
 	    i++;
