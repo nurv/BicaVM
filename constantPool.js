@@ -51,8 +51,8 @@ var constUtf8 = function(){
       }
       strBuf += String.fromCharCode(one_char);
     } // while
-        
         this.str = strBuf.toString();
+        log(this.str);
   } // read
     return this;  
 };
@@ -60,7 +60,7 @@ var constUtf8 = function(){
 var constInt = function(){
     this.value = null;
     this.id = CONSTANT_Integer;
-    this.read = function ( dSStream ){
+    this.read = function ( dStream ){
         this.value = dStream.getU4();
     }
 };
@@ -68,7 +68,7 @@ var constInt = function(){
 var constFloat = function(){
     this.value = null;
     this.id = CONSTANT_Float;
-    this.read = function ( dSStream ){
+    this.read = function ( dStream ){
         this.value = dStream.getU4();
     }
 };
@@ -231,28 +231,6 @@ var allocConstEntry = function(tag){
     return obj;
 }
 
-var ConstantPool = function(dStream){
-    this.constantPoolCount = dStream.getU2();
-    this.constantPool = [];
-    for(var i = 1; i < this.constantPoolCount; i++){        
-        var tag = dStream.getU1();
-        var alloc = allocConstEntry(tag);
-	alloc.read(dStream);
-        this.constantPool[(i-1)] = alloc;
-        if (alloc.id == CONSTANT_Long || alloc.id == CONSTANT_Double) {
-            log("next");
-	    i++;
-	    this.constantPool[(i-1)] = null;
-        }
-    }
-    for(var i = 1; i < this.constantPoolCount; i++){
-        var obj = this.constantPool[(i-1)];
-        if (obj.set_ref){
-            obj.set_ref(this.constantPool);
-        }
-    }
-}
-
 var constTagName = function (info){
     switch(info){
         case 7:
@@ -303,4 +281,36 @@ var ConstantPoolRef = function(index, constantPool, expected){
         throw "ConstantPoolRef: ref was expected to be " + constTagName(expected) + " but at " + index + " there's a " + constTagName(result.id);
     }
     return result;
+}
+
+var ConstantPool = function(dStream){
+    this.constantPoolCount = dStream.getU2();
+    this.constantPool = [];
+   log(this.constantPoolCount);
+    for(var i = 1; i < this.constantPoolCount; i++){        
+        var tag = dStream.getU1();
+        var alloc = allocConstEntry(tag);
+	alloc.read(dStream);
+       log(i + " : " + constTagName(alloc.id));
+        this.constantPool[(i-1)] = alloc;
+        if (alloc.id == CONSTANT_Long || alloc.id == CONSTANT_Double) {
+	    i++;
+	    this.constantPool[(i-1)] = null;
+        }
+    }
+    for(var i = 1; i < this.constantPoolCount; i++){
+        var obj = this.constantPool[(i-1)];
+        if (obj && obj.set_ref){
+            obj.set_ref(this.constantPool);
+        }
+    }
+    this.each = function(fn,kind){
+        for(var i = 1; i < this.constantPoolCount; i++){
+            var obj = this.constantPool[(i-1)];
+            if (obj){
+                if (obj.id != kind) {continue;}
+                fn(obj);
+            }
+        }
+    }
 }

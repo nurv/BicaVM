@@ -156,7 +156,7 @@ var Attributes_table = {
 function UnkownAttr(){
     this.read = function(dStream){
         this.info = [];
-        for(var i=0; i<attribute_length; i++){
+        for(var i=0; i<this.attribute_length; i++){
             this.info[i] = dStream.getU1();
         }
     }

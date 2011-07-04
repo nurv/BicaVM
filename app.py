@@ -25,6 +25,11 @@ class index:
         if filename.endswith("favicon.ico"):
             web.webapi.notfound()
             return ""
+        if filename.endswith(".js"):
+            web.header('Content-Type', 'text/javascript')
+        if "testRuntime" in filename:
+            alphex = filename[filename.rfind("/") + 1:];
+            return file("runtime/" + alphex.replace(".","/") + ".class");
         if filename == "":
             return file("index.html").read()
         try:
