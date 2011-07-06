@@ -52,7 +52,7 @@ var log = function (msg){
     }
 }
 
-var ClassDefinition = function (file){
+var ClassDefinition = function (file,jvm){
     var dataStream = new DataStream(slurpFile(file)[1]);
     this.magic = dataStream.getU4();
     if (this.magic != 0xCAFEBABE){
@@ -75,7 +75,6 @@ var ClassDefinition = function (file){
     }
     this.interface_count = dataStream.getU2();
     
-    // VER: interfaces refs must be classes
     this.interfaces = [];
     for(var i=0; i<this.interface_count; i++){
         this.interfaces[i] = ConstantPoolRef(dataStream.getU2(), this.constantPool,CONSTANT_Class);
@@ -93,8 +92,72 @@ var ClassDefinition = function (file){
     for(var i=0; i<this.methods_count; i++){
         this.methods[i] = new MethodInfo(dataStream, this.constantPool);
     }
+
+    // Post added info;
+    this.jvm = jvm;
+    this className = this.this_class.name_ref.str.replace(/\//g,".");
 }
 
-function LoadClassFile (x){
-    return new ClassDefinition(x);
+ClassDefinition.prototype.isInterface = function () {
+    return ACC_INTERFACE & this.access_flags;
 }
+
+ClassDefinition.prototype.isArrayClass = function (){
+    return false;
+}
+
+ClassDefinition.prototype.isAssignable = function (T) {
+    // 2.6.7 Assignment Conversion
+    if (this.isInterface()){
+        if (T.isInterface()){
+            return this.isInterfaceOrSuperInterface(T);
+        }else{
+            return T == this.jvm.java_lang_object;
+        }
+    }else if(this.isArrayClass()){
+        if (T.isInterface()){
+            return (T == this.jvm.java_lang_cloneable || T == this.jvm.java_io_serializable);
+        }else if (T.isArrayClass()){
+            
+        }else{
+            return T == this.jvm.java_lang_object;
+        }
+    }else{
+        if (T.isInterface()){
+            return this.isInterfaceOrSuperInterface(T);
+        }else{
+            return this.isClassOrSuperClass(T);
+        }
+    }
+}
+
+ClassDefinition.prototype.isClassOrSuperClass = function(C){
+    if (this == C){
+        return true;
+    }else{
+        if (this.jvm.java_lang_object == this){
+            return false;
+        }else{
+            this.jvm.classForName(this.super_class.name_ref).isClassOrSuperClass(C);
+        }
+    }
+}
+
+ClassDefinition.prototype.isInterfaceOrSuperInterface = function(I){
+    if (this == I){
+        return true;
+    }else{
+        for(var i; i<this.interface_count; i++){
+            if (this.interfaces[i].isInterfaceOrSuperInterface(I)){
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+function LoadClassFile (x,jvm){
+    return new ClassDefinition(x,jvm);
+}
+
+
