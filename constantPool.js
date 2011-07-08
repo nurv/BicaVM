@@ -40,34 +40,7 @@ var constUtf8 = function(){
             }else{
                 result = byte_x
             }
-                strBuf += String.fromCharCode(byte_x);
-
-
-            /*
-      
-      if ((one_byte >> 7) == 1) {
-	var tmp;
-
-	// its a multi-byte character
-	tmp = (one_byte & 0x3f);  // Bits 5..0 (six bits)
-	// read the next byte
-	one_byte = dStream.getU1();
-	charCnt++;
-	tmp = (tmp | ((one_byte & 0x3f) << 6));
-	if ((one_byte >> 6) == 0x2) {
-	  // We have 12 bits so far, get bits 15..12
-	  one_byte = dStream .getU1();
-	  charCnt++;
-	  one_byte = (one_byte & 0xf);
-	  tmp = (tmp | (one_byte << 12));
-	}
-	one_char = tmp;
-      }
-      else {
-	  one_char = one_byte;
-      }
-      strBuf += String.fromCharCode(one_char);
-*/
+            strBuf += String.fromCharCode(byte_x);
     } // while
         this.str = strBuf.toString();
   } // read
@@ -300,7 +273,10 @@ var ConstantPoolRef = function(index, constantPool, expected){
     return result;
 }
 
-var ConstantPool = function(dStream){
+var ConstantPool = function(){
+}
+
+ConstantPool.prototype.loadFromStream = function(dStream){
     this.constantPoolCount = dStream.getU2();
     this.constantPool = [];
     for(var i = 1; i < this.constantPoolCount; i++){        
@@ -328,4 +304,8 @@ var ConstantPool = function(dStream){
             }
         }
     }
+}
+
+ConstantPool.prototype.get = function (i){
+    return this.constantPoll[i];
 }

@@ -52,7 +52,58 @@ var log = function (msg){
     }
 }
 
-var ClassDefinition = function (file,jvm){
+var ClassDefinition = function(jvm) {
+        this.jvm = jvm;
+};
+
+// bad bad code! This shouldn't be done this way!
+ClassDefinition.prototype.makeForArray = function(arrayDef){
+    this.magic = 0xCAFEBABE;
+    this.minorVersion = 0;
+    this.majorVersion = 50;
+    this.constantPool = [];
+    this.access_flags = 0;
+    this.this_class = {id:CONSTANT_Class, name_ref:{str:arrayDef}};
+    this.super_class = null;
+    this.interface_count = 0;
+    this.interfaces = [];
+    this.fields_count = 0; 
+    this.fields = [];
+    this.methods_count = 1;
+    this.methods = [
+        {
+            access_flags:0,
+            name_ref: {str:"clone"},
+            descriptor_ref: {str: "()Ljava.lang.Object;"},
+            attributes_count:0,
+            attributes: []
+        }
+    ];
+    ClassDefinition.prototype.isArrayClass = function (){
+        return true;
+    }
+
+    // extra info:
+    this.dimensions = 0;
+    var i=0;
+    for (i=0; i<arrayDef.length; i++){
+        if (arrayDef.charAt(i) == "["){
+            this.dimensions += 1;
+        }else{
+            break;
+        }
+    }
+    this.arrayType = arrayDef.substr(1,arrayDef.length);
+    if (this.arrayType.charAt(0) == "L"){
+        this.arrayTypeClass = arrayDef.substr(i+1,arrayDef.length-1);
+        this.jvm.classForName(this.arrayTypeDef);
+    }else{
+        this.arrayTypeClass = "";
+    }
+    
+}
+
+ClassDefinition.prototype.loadFromFile = function (file){
     var dataStream = new DataStream(slurpFile(file)[1]);
     this.magic = dataStream.getU4();
     if (this.magic != 0xCAFEBABE){
@@ -63,7 +114,8 @@ var ClassDefinition = function (file,jvm){
     if (this.majorVersion > 50 || this.majorVersion < 45){
         throw "Unsuported java class file format version";
     }
-    this.constantPool = new ConstantPool(dataStream);
+    this.constantPool = new ConstantPool();
+    this.constantPool.loadFromStream(dataStream);
     this.access_flags = dataStream.getU2();
     
     this.this_class = ConstantPoolRef(dataStream.getU2(), this.constantPool, CONSTANT_Class);
@@ -93,9 +145,14 @@ var ClassDefinition = function (file,jvm){
         this.methods[i] = new MethodInfo(dataStream, this.constantPool);
     }
 
+    this.attributes_count = dataStream.getU2();
+    this.attributes = [];
+    for (var i=0; i<this.attributes_count; i++){
+        this.attributes[i] = Attribute(dataStream,this.constantPool);
+    }
+
     // Post added info;
-    this.jvm = jvm;
-    this className = this.this_class.name_ref.str.replace(/\//g,".");
+    this.className = this.this_class.name_ref.str.replace(/\//g,".");
 }
 
 ClassDefinition.prototype.isInterface = function () {
@@ -118,7 +175,16 @@ ClassDefinition.prototype.isAssignable = function (T) {
         if (T.isInterface()){
             return (T == this.jvm.java_lang_cloneable || T == this.jvm.java_io_serializable);
         }else if (T.isArrayClass()){
-            
+            if (T.arrayType.charAt(i) == this.arrayType.charAt(i) && (this.arrayType.charAt(i) == "L" || this.arrayType.charAt(i) == "[")){
+                return this.jvm.classForName(this.arrayType).isAssignable(T.arrayType);
+            }else{
+                // VER: check if elements are primitive.
+                if (T.arrayType.charAt(i) == this.arrayType.charAt(i)){
+                    return true;
+                }else{
+                    return false;
+                }
+            }    
         }else{
             return T == this.jvm.java_lang_object;
         }
@@ -157,7 +223,15 @@ ClassDefinition.prototype.isInterfaceOrSuperInterface = function(I){
 }
 
 function LoadClassFile (x,jvm){
-    return new ClassDefinition(x,jvm);
+    var def = new ClassDefinition(jvm);
+    if (x.charAt(0) != "[" ){
+        def.loadFromFile(x);
+    }else{
+        def.makeForArray(x);
+    }
+    
+    
+    return def;
 }
 
 

@@ -5,7 +5,8 @@ include("attributes.js");
 include("infos.js");
 include("class.js");
 include("cpu.js");
-
+var test_jvm;
 function main (args){
-    new JVM({},["java.text.DecimalFormat"]).run();
+    test_jvm = new JVM({},["[I"])
+    test_jvm.run();
 }
