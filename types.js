@@ -1,4 +1,14 @@
-
+/* -*- Mode: Javascript -*-
+ * -*- coding: UTF-8 -*-
+ * Copyright (C) 2011 by Artur Ventura
+ *
+ * File: types.js
+ * Time-stamp: Fri Jul 15 02:46:27 2011
+ *
+ * Author: Artur Ventura
+ *
+ */
+ 
 // Local Variables Types
 var LOC_VAR_boolean       = 0x001;
 var LOC_VAR_byte          = 0x002;
@@ -30,10 +40,3 @@ function getRefClass(ref){
 
 var NULL = makeLocalVar(LOC_VAR_reference);
 
-function isSubClass(refS,refT){
-
-}
-
-function implements(refS,refT){
-
-}

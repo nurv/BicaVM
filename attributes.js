@@ -1,3 +1,14 @@
+/* -*- Mode: Javascript -*-
+ * -*- coding: UTF-8 -*-
+ * Copyright (C) 2011 by Artur Ventura
+ *
+ * File: attributes.js
+ * Time-stamp: Fri Jul 15 02:46:27 2011
+ *
+ * Author: Artur Ventura
+ *
+ */
+ 
 var ExceptionTableEntry = function(dStream, constantPool){
     this.start_pc = dStream.getU2();
     this.end_pc = dStream.getU2();

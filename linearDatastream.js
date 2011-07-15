@@ -1,3 +1,14 @@
+/* -*- Mode: Javascript -*-
+ * -*- coding: UTF-8 -*-
+ * Copyright (C) 2011 by Artur Ventura
+ *
+ * File: linearDatastream.js
+ * Time-stamp: Fri Jul 15 02:46:27 2011
+ *
+ * Author: Artur Ventura
+ *
+ */
+ 
 var DataStream = function(data){
     this.i = 0;
 

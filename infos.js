@@ -1,3 +1,14 @@
+/* -*- Mode: Javascript -*-
+ * -*- coding: UTF-8 -*-
+ * Copyright (C) 2011 by Artur Ventura
+ *
+ * File: infos.js
+ * Time-stamp: Fri Jul 15 02:46:27 2011
+ *
+ * Author: Artur Ventura
+ *
+ */
+
 var FieldInfo = function(dStream,constantPool){
     this.access_flags = dStream.getU2();
     this.name_index = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);

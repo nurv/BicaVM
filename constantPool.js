@@ -1,14 +1,26 @@
-var CONSTANT_Class = 7;
-var CONSTANT_Fieldref = 9;
-var CONSTANT_Methodref = 10;
-var CONSTANT_InterfaceMethodref = 11;
-var CONSTANT_String = 8;
-var CONSTANT_Integer = 3;
-var CONSTANT_Float = 4;
-var CONSTANT_Long = 5;
-var CONSTANT_Double = 6;
-var CONSTANT_NameAndType = 12;
-var CONSTANT_Utf8 = 1;
+/* -*- Mode: Javascript -*-
+ * -*- coding: UTF-8 -*-
+ * Copyright (C) 2011 by Artur Ventura
+ *
+ * File: constantPool.js
+ * Time-stamp: Fri Jul 15 02:46:27 2011
+ *
+ * Author: Artur Ventura
+ *
+ */
+
+#define CONSTANT_Utf8                1
+//what is CONSTANT_?????             2
+#define CONSTANT_Integer             3
+#define CONSTANT_Float               4
+#define CONSTANT_Long                5
+#define CONSTANT_Double              6
+#define CONSTANT_Class               7
+#define CONSTANT_String              8
+#define CONSTANT_Fieldref            9
+#define CONSTANT_Methodref          10
+#define CONSTANT_InterfaceMethodref 11
+#define CONSTANT_NameAndType        12
 
 // constant pool members
 
