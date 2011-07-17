@@ -26,7 +26,7 @@ function canonicalName(ref){
 }
 
 var JVM = function(params,args){
-    this.heap = {};
+    this.nativeMappingTable = {}
     this.params = params;
     this.args = args; 
     this.method_area = {};
@@ -34,6 +34,7 @@ var JVM = function(params,args){
     this.classpath = params.classes_to_load;
 
     this.classForName = function (name){
+        if (!name) { PANIC("undefined className")}
         var superClass, loaded_class = this.method_area[name];
         
         if (!loaded_class){
@@ -52,8 +53,8 @@ var JVM = function(params,args){
         var superClass;
         if(loaded_class.super_class){
             // if super_class not java.lang.Object
-            superClass = canonicalName(loaded_class.super_class.name_ref);
-            this.classForName(superClass);
+                superClass = canonicalName(loaded_class.super_class.name_ref);
+                loaded_class.super_class_ref = this.classForName(superClass);
         }
 
             // this doesn't seem right. doing this will cause the entire JRE to be loaded
@@ -74,8 +75,8 @@ var JVM = function(params,args){
         this.java_lang_object = this.classForName("java.lang.Object");
         this.java_lang_cloneable = this.classForName("java.lang.Cloneable");
         this.java_io_serializable = this.classForName("java.io.Serializable");
-        var mainClass = this.args[0];
-        this.classForName(mainClass);
+        this.mainClass = this.args[0];
+        this.classForName(this.mainClass).makeInstance();
     };
 };
 

@@ -62,13 +62,13 @@ DEFOP(ANEWARRAY)
         JVM_THROWS_NEW(java.lang.NegativeArraySizeException);
     }
     var clRef = frame.classRef.constantPool.get((indexbyte1 << 8) | indexbyte2);
-    var instance = {length)count, value)[], classRef)this.jvm.classForName(clRef)};
+    var instance = {length:count, value:[], classRef:this.jvm.classForName(clRef)};
     operand_stack.push(instance);
 ENDDEF
 
 DEFOP(ARETURN)
     var objectref = operand_stack.pop();
-    return {return_object) objectref}
+    return {return_object: objectref}
 ENDDEF
 
 DEFOP(ARRAYLENGTH)

@@ -11,8 +11,10 @@
 
 var FieldInfo = function(dStream,constantPool){
     this.access_flags = dStream.getU2();
-    this.name_index = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
-    this.descriptor_index = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
+    this.name_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
+    this.descriptor_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
+    var type = this.descriptor_ref.str.charAt(0);
+    this.primitive = (type == "L" || type == "[")?false:true;
     this.attributes_count = dStream.getU2();
     this.attributes = [];
     for (var i=0; i<this.attributes_count; i++){
@@ -22,8 +24,8 @@ var FieldInfo = function(dStream,constantPool){
 
 var MethodInfo = function(dStream, constantPool){
     this.access_flags = dStream.getU2();
-    this.name_index = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
-    this.descriptor_index = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
+    this.name_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
+    this.descriptor_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
     this.attributes_count = dStream.getU2();
     this.attributes = [];
     for (var i=0; i<this.attributes_count; i++){

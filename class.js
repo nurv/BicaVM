@@ -9,6 +9,8 @@
  *
  */
 
+#define CLASS_MAGIC 0xCAFEBABE
+
 #define ACC_PUBLIC    0x0001 // Declared public; may be accessed from outside its package.
 #define ACC_PRIVATE	  0x0002 // Declared private; usable only within the defining class.
 #define ACC_PROTECTED 0x0004 // Declared protected; may be accessed within subclasses.
@@ -62,7 +64,7 @@ var ClassDefinition = function(jvm) {
 
 // bad bad code! This shouldn't be done this way!
 ClassDefinition.prototype.makeForArray = function(arrayDef){
-    this.magic = 0xCAFEBABE;
+    this.magic = CLASS_MAGIC;
     this.minorVersion = 0;
     this.majorVersion = 50;
     this.constantPool = [];
@@ -110,7 +112,7 @@ ClassDefinition.prototype.makeForArray = function(arrayDef){
 ClassDefinition.prototype.loadFromFile = function (file){
     var dataStream = new DataStream(slurpFile(file)[1]);
     this.magic = dataStream.getU4();
-    if (this.magic != 0xCAFEBABE){
+    if (this.magic != CLASS_MAGIC){
         throw "Invalid Class Magic (" + this.magic + ")" ;
     }
     this.minorVersion = dataStream.getU2();    
@@ -208,7 +210,7 @@ ClassDefinition.prototype.isClassOrSuperClass = function(C){
         if (this.jvm.java_lang_object == this){
             return false;
         }else{
-            this.jvm.classForName(this.super_class.name_ref).isClassOrSuperClass(C);
+            this.super_class_ref.isClassOrSuperClass(C);
         }
     }
 }
@@ -224,6 +226,57 @@ ClassDefinition.prototype.isInterfaceOrSuperInterface = function(I){
         }
         return false;
     }
+}
+
+ClassDefinition.prototype.initializeClass = function(){
+    if (this.super_class && !this.super_class_ref.inited){
+        this.super_class_ref.initializeClass();
+    }
+    this.calculateEffectiveMembers();   
+    
+    // call <cinit>
+    this.inited = true;
+}
+
+ClassDefinition.prototype.calculateEffectiveMembers = function(){
+    if (!this.effectiveMethods){
+        var superEffective = (this.super_class)? this.super_class_ref.calculateEffectiveMembers() : [{},{}];
+
+        // fields
+        this.effectiveFields = {}        
+        for(var k in superEffective[0]){
+            this.effectiveFields[k] = superEffective[0][k];
+        }
+        
+        for(var i=0; i<this.fields_count; i++){
+            var field = this.fields[i]
+            this.effectiveFields[this.this_class.name_ref.str + " " + field.name_ref.str] = field;
+        }
+        
+        // methods
+        this.effectiveMethods = {}
+        for(var k in superEffective[1]){
+            this.effectiveMethods[k] = superEffective[1][k];
+        }
+        
+        for(var i=0; i<this.methods_count; i++){
+            var method = this.methods[i]
+            this.effectiveMethods[this.this_class.name_ref.str + " " + method.name_ref.str + method.descriptor_ref.str] = method;
+        }
+
+    }
+    
+    return [this.effectiveFields,this.effectiveMethods];       
+}
+
+ClassDefinition.prototype.makeInstance = function(){
+    if (!this.inited) { this.initializeClass(); }
+    var newInstance = {};
+    for(var k in this.effectiveFields){
+        newInstance[k] = (this.effectiveFields[k].primitive)?0:null;
+    }
+    newInstance["class"] = this;
+    return newInstance;
 }
 
 function LoadClassFile (x,jvm){
