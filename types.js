@@ -8,6 +8,9 @@
  * Author: Artur Ventura
  *
  */
+
+#ifndef _TYPES_JS_
+#define _TYPES_JS_ 
  
 // Local Variables Types
 #define LOC_VAR_boolean       0x001;
@@ -61,7 +64,6 @@
 #define LONG_OVERFLOW(value) ((value % (2*LONG_USIZE)) - (LONG_USIZE))
 #define POSITIVE_INF Number.POSITIVE_INFINITY
 #define NEGATIVE_INF Number.NEGATIVE_INFINITY
-#define NAN NaN
 
 #define IS_OVERFLOW(value,mark) (value > mark)
 #define IS_UNDERFLOW(value,mark) (value < mark)
@@ -86,6 +88,6 @@ function getRefClass(ref){
         return ref.classRef;
     }
 }
-
+#endif //_TYPES_JS_
 
 

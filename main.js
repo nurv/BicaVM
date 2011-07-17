@@ -27,6 +27,7 @@
 #include "infos.js"
 #include "class.js"
 #include "cpu.js"
+#include "types.js"
 
 
 var test_jvm;

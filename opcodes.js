@@ -8,6 +8,9 @@
  * Author: Artur Ventura
  *
  */
+ 
+#ifndef _TYPES_JS_
+#define _TYPES_JS_
 
 #define NOP 0
 #define ACONST_NULL 1
@@ -210,3 +213,5 @@
 #define IFNONNULL 199
 #define GOTO_W 200
 #define JSR_W 201
+
+#endif // _TYPES_JS_

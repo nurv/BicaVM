@@ -14,12 +14,25 @@
 #define JVM_THROWS_NEW(exception) throw "VER: throws new exception"
 #ifdef DEBUG_INTRP
 #define LOG_INTRP(x) LOG(x)
+#define DEFALIAS(opx) case opx: if(temp!=null) { temp = pc + ": opx" }
 #else
 #define LOG_INTRP(x) 
+#define DEFALIAS(opx) case opx:
 #endif
 
-#define DEFOP(opcode) case opcode: LOG_INTRP("opcode pc: " + pc);
+#define DEFOP(opx) case opx: LOG_INTRP(pc + ": opx");
+#define DEFNOP() LOG_INTRP(temp);
 #define ENDDEF break;
+
+#define OPPOP() operand_stack.pop()
+#define OPPUSH(v) operand_stack.push(v)
+
+#define LOCAL_VAR(v) local_variables[v]
+#define OPCODE opcode
+#define PC pc
+#define READ_NEXT() code[++pc]
+
+
 
 function canonicalName(ref){
     return ref.str.replace(/\//g,".")
@@ -104,7 +117,10 @@ function interpret(frame){
     var local_variables = frame.local_variables;
     var code = 0; //resolve code from method;
     
-    switch(opcode){
+#ifdef DEBUG_INTRP
+        var temp = null; 
+#endif
+    switch(OPCODE){
 #include "intrp.js"        
     }
 }

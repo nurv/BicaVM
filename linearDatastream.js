@@ -8,8 +8,9 @@
  * Author: Artur Ventura
  *
  */
- 
-var DataStream = function(data){
+
+/** @constructor */
+function DataStream(data){
     this.i = 0;
 
     this.getF = function(size){
