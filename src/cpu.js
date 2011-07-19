@@ -10,18 +10,21 @@
  */
 
 #import "opcodes.js"
-
+#import "types.js"
 #define JVM_THROWS_NEW(exception) throw "VER: throws new exception"
 #ifdef DEBUG_INTRP
 #define LOG_INTRP(x) LOG(x)
 #define DEFALIAS(opx) case opx: if(temp!=null) { temp = pc + ": opx" }
+
 #else
 #define LOG_INTRP(x) 
 #define DEFALIAS(opx) case opx:
 #endif
 
+#define PANIC(msg) throw new JVMPanic(msg)
+
 #define DEFOP(opx) case opx: LOG_INTRP(pc + ": opx");
-#define DEFNOP() LOG_INTRP(temp);
+#define DEFNOP() LOG_INTRP(temp)
 #define ENDDEF break;
 
 #define OPPOP() operand_stack.pop()
@@ -40,7 +43,7 @@
 #define READ_NEXT() code[++pc]
 
 #define canonicalName(ref) ref.str.replace(/\//g,".")
-
+/** @constructor */
 var JVM = function(params,args){
     this.nativeMappingTable = {}
     this.params = params;
@@ -95,30 +98,31 @@ var JVM = function(params,args){
         this.classForName(this.mainClass).makeInstance();
     };
 };
-
+/** @constructor */
 var JVMThread = function(){
     this.pc = null;
     this.stack = [];
 }
-
+/** @constructor */
 var JVMFrame = function(){
     this.local_variables = [];
     this.operand_stack = [];
     
 }
-
+/** @constructor */
 function JVMPanic(message){
     this.toString = function(){
         return "JVMPanic: " + message
     }
 };
 
-#define PANIC(msg) throw new JVMPanic(msg)
-
 function interpret(frame){
     var operand_stack = frame.operand_stack;
     var local_variables = frame.local_variables;
     var code = 0; //resolve code from method;
+    var opcode;
+    var pc;
+    var xl;
     
 #ifdef DEBUG_INTRP
         var temp = null; 

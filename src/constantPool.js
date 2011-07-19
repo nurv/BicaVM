@@ -24,6 +24,7 @@
 
 // constant pool members
 
+/** @constructor */
 var constUtf8 = function(){
     this.str = null;
     this.id = CONSTANT_Utf8;
@@ -32,7 +33,7 @@ var constUtf8 = function(){
         var charCnt;
         var byte_x,byte_y,byte_z;
         var result;
-        one_char = '\u0000';
+        var one_char = '\u0000';
         this.length = dStream.getU2();
         strBuf = "";
         charCnt = 0;
@@ -59,6 +60,7 @@ var constUtf8 = function(){
     return this;  
 };
 
+/** @constructor */
 var constInt = function(){
     this.value = null;
     this.id = CONSTANT_Integer;
@@ -67,6 +69,7 @@ var constInt = function(){
     }
 };
 
+/** @constructor */
 var constFloat = function(){
     this.value = null;
     this.id = CONSTANT_Float;
@@ -75,6 +78,7 @@ var constFloat = function(){
     }
 };
 
+/** @constructor */
 var constLong = function(){
     this.high = null;
     this.low = null;
@@ -85,6 +89,7 @@ var constLong = function(){
     }
 };
 
+/** @constructor */
 var constDouble = function(){
     this.high = null;
     this.low = null;
@@ -95,6 +100,7 @@ var constDouble = function(){
     }
 };
 
+/** @constructor */
 var constClass = function(){
     this.name_index = null;
     this.id = CONSTANT_Class;
@@ -110,6 +116,7 @@ var constClass = function(){
     }
 };
 
+/** @constructor */
 var constString = function(){
     this.string_index = null;
     this.id = CONSTANT_String;
@@ -125,6 +132,7 @@ var constString = function(){
     }
 };
 
+/** @constructor */
 var constRef = function(){
     this.class_index = null;
     this.name_and_type_index = null;
@@ -147,24 +155,28 @@ var constRef = function(){
     }
 };
 
+/** @constructor */
 var constFieldRef = function(){
     var temp = new constRef();
     temp.id = CONSTANT_Fieldref;
     return temp;
 };
 
+/** @constructor */
 var constMethodRef = function(){
     var temp = new constRef();
     temp.id = CONSTANT_Methodref;
     return temp;
 };
 
+/** @constructor */
 var constInterfaceMethodRef = function(){
     var temp = new constRef();
     temp.id = CONSTANT_InterfaceMethodref;
     return temp;
 };
 
+/** @constructor */
 var constName_and_Type_info = function(){
     this.name_index = null;
     this.descriptor_index = null;
@@ -271,7 +283,6 @@ var constTagName = function (info){
         default:
         return "??0x" + info.toString(16) + "??";
     }
-    return null;
 }
 
 var ConstantPoolRef = function(index, constantPool, expected){
@@ -319,5 +330,5 @@ ConstantPool.prototype.loadFromStream = function(dStream){
 }
 
 ConstantPool.prototype.get = function (i){
-    return this.constantPoll[i];
+    return this.constantPool[i];
 }

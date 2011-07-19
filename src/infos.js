@@ -9,6 +9,7 @@
  *
  */
 
+/** @constructor */
 var FieldInfo = function(dStream,constantPool){
     this.access_flags = dStream.getU2();
     this.name_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
@@ -22,6 +23,7 @@ var FieldInfo = function(dStream,constantPool){
     }
 }
 
+/** @constructor */
 var MethodInfo = function(dStream, constantPool){
     this.access_flags = dStream.getU2();
     this.name_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);

@@ -8,9 +8,6 @@
  * Author: Artur Ventura
  *
  */
-
-#ifndef _TYPES_JS_
-#define _TYPES_JS_ 
  
 // Local Variables Types
 #define LOC_VAR_boolean       0x001;
@@ -81,13 +78,13 @@
 #define USHR(value1,value2) ((value1)>0?(value1)>>s:((value1)>>s) + (2<<~s))
 #define XOR(value1,value2)  ((value1)^(value2))
 
-function getRefClass(ref){
+/*function getRefClass(ref){
     if (ref.type == REF_TYPE_array){
-        return getArrayClass();
+        return getArrayClass(ref);
     }else{
         return ref.classRef;
     }
-}
-#endif //_TYPES_JS_
+}*/
+
 
 

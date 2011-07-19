@@ -45,10 +45,6 @@ function DataStream(data){
 	    result = new DataView(data,this.i,4).getUint32(0);
 	    this.i += 4;
 	    break;
-	case 8:
-	    result = new DataView(data,this.i,8).getUint64(0);
-	    this.i += 8;
-	    break;
         default:
             throw "Weird size " + size;
 	}
@@ -69,10 +65,6 @@ function DataStream(data){
 	case 4:
 	    result = new DataView(data,this.i,4).getInt32(0);
 	    this.i += 4;
-	    break;
-	case 8:
-	    result = new DataView(data,this.i,8).getInt64(0);
-	    this.i += 8;
 	    break;
         default:
             throw "Weird size " + size;            

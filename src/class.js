@@ -39,7 +39,7 @@ function slurpFile (filename, fa) {
     if (xmlHttpRequest.status != 200 && xmlHttpRequest.status != 0) {
         throw "Error while loading " + filename;
     }
-    bf = true;
+    var bf = true;
     if ('mozResponse' in xmlHttpRequest) {
         response = xmlHttpRequest.mozResponse;
     } else if (xmlHttpRequest.mozResponseArrayBuffer) {
@@ -57,7 +57,7 @@ function slurpFile (filename, fa) {
     }
     return result;
 };
-
+/** @constructor */
 var ClassDefinition = function(jvm) {
         this.jvm = jvm;
 };
@@ -181,11 +181,11 @@ ClassDefinition.prototype.isAssignable = function (T) {
         if (T.isInterface()){
             return (T == this.jvm.java_lang_cloneable || T == this.jvm.java_io_serializable);
         }else if (T.isArrayClass()){
-            if (T.arrayType.charAt(i) == this.arrayType.charAt(i) && (this.arrayType.charAt(i) == "L" || this.arrayType.charAt(i) == "[")){
+            if (T.arrayType.charAt(0) == this.arrayType.charAt(0) && (this.arrayType.charAt(0) == "L" || this.arrayType.charAt(0) == "[")){
                 return this.jvm.classForName(this.arrayType).isAssignable(T.arrayType);
             }else{
                 // VER: check if elements are primitive.
-                if (T.arrayType.charAt(i) == this.arrayType.charAt(i)){
+                if (T.arrayType.charAt(0) == this.arrayType.charAt(0)){
                     return true;
                 }else{
                     return false;

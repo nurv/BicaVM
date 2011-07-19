@@ -9,6 +9,7 @@
  *
  */
  
+/** @constructor */
 var ExceptionTableEntry = function(dStream, constantPool){
     this.start_pc = dStream.getU2();
     this.end_pc = dStream.getU2();
@@ -21,6 +22,7 @@ var ExceptionTableEntry = function(dStream, constantPool){
     }
 }
 
+/** @constructor */
 var InnerClass = function(dStream, constantPool){
     this.inner_class_info = ConstantPoolRef(dStream.getU2(), constantPool,CONSTANT_Class);
     var outerClassIndex = dStream.getU2();
@@ -33,11 +35,13 @@ var InnerClass = function(dStream, constantPool){
     this.inner_class_access_flags = dStream.getU2();
 }
 
+/** @constructor */
 var LineNumberTableEntry = function(dStream){
     this.start_pt = dStream.getU2();
     this.line_number = dStream.getU2();
 }
 
+/** @constructor */
 var LocalVariableTableEntry = function(dStream, constantPool){
     this.start_pc = dStream.getU2();
     this.length  =dStream.getU2();
@@ -47,6 +51,7 @@ var LocalVariableTableEntry = function(dStream, constantPool){
 }
 
 var Attributes_table = {
+    /** @constructor */
     ConstantValue: function(){
         this.read = function(dStream, constantPool){
             this.constantvalue = ConstantPoolRef(dStream.getU2(), constantPool);
@@ -63,7 +68,7 @@ var Attributes_table = {
             }
         }
     },
-
+    /** @constructor */
     Code: function(){
         this.read = function(dStream, constantPool){
             this.max_stack = dStream.getU2();
@@ -100,7 +105,7 @@ var Attributes_table = {
             }
         }
     },
-
+    /** @constructor */
     Exceptions: function(){
         this.read = function(dStream, constantPool){
             this.number_of_exceptions = dStream.getU2();
@@ -110,7 +115,7 @@ var Attributes_table = {
             }
         }
     },
-
+    /** @constructor */
     InnerClasses: function(){
         this.read = function(dStream, constantPool){
             this.number_of_classes = dStream.getU2();
@@ -120,7 +125,7 @@ var Attributes_table = {
             }
         }
     },
-
+    /** @constructor */
     Synthetic: function(){
         this.read = function(dStream,constantPool){
             if (this.attribute_length != 0){
@@ -128,13 +133,13 @@ var Attributes_table = {
             }
         }
     },
-
+    /** @constructor */
     SourceFile: function(){
         this.read = function(dStream,constantPool){
             this.soucefile = ConstantPoolRef(dStream.getU2(), constantPool,CONSTANT_Utf8);
         }
     },
-
+    /** @constructor */
     LineNumberTable: function(){
         this.read = function(dStream,constantPool){
             this.line_number_table_length = dStream.getU2();
@@ -144,17 +149,17 @@ var Attributes_table = {
             }
         }
     },
-
+    /** @constructor */
     LocalVariableTable: function(){
         this.read=function(dStream,constantPool){
             this.local_variable_table_length = dStream.getU2();
             this.local_variable_table = [];
-            for(var i=0; i<local_variable_table_length; i++){
-                this.local_variable_table[i] = new LocalVariableTableEntry(dSteam,constantPool);
+            for(var i=0; i<this.local_variable_table_length; i++){
+                this.local_variable_table[i] = new LocalVariableTableEntry(dStream,constantPool);
             }
         }
     },
-
+    /** @constructor */
     Deprecated: function(){
         this.read = function(dStream,constantPool){
             if (this.attribute_length != 0){
@@ -163,7 +168,7 @@ var Attributes_table = {
         }
     }
 };
-
+/** @constructor */
 function UnkownAttr(){
     this.read = function(dStream){
         this.info = [];

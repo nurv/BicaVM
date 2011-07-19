@@ -9,11 +9,8 @@
  *
  */
 
-#define DEBUG
-#define DEBUG_INTRP
-
 #ifndef DEBUG
-#define log(msg)
+#define LOG(msg)
 #else
 #define LOG(msg) write(msg);\
     if (console){\

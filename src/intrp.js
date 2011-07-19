@@ -14,7 +14,7 @@
 #define CHECK_ARRAY_INDEX(ind,ref) if (ind >= ref.length){ JVM_THROWS_NEW(java.lang.ArrayIndexOutOfBoundsException); }
 
 #define TO_INT(value)   if (isNaN(value)){ OPPUSH(0); }else if(IS_OVERFLOW(value,INT_MAX_VALUE)){ OPPUSH(INT_MAX_VALUE); }else if(IS_UNDERFLOW(value,INT_MIN_VALUE)){ OPPUSH(INT_MIN_VALUE); }else{ OPPUSH(Math.round(value)); }
-#define TO_FLOAT(value) if (isNaN(value)){ OPPUSHD(NaN); }else if(IS_OVERFLOW(value,FLOAT_MAX_VALUE)){ OPPUSHD(POSITIVE_INF); }else if (IS_UNDEFLOW(value,FLOAT_MIN_VALUE)){ OPPUSHD(NEGATIVE_INF); }else{ OPPUSHD(value);}
+#define TO_FLOAT(value) if (isNaN(value)){ OPPUSHD(NaN); }else if(IS_OVERFLOW(value,FLOAT_MAX_VALUE)){ OPPUSHD(POSITIVE_INF); }else if (IS_UNDERFLOW(value,FLOAT_MIN_VALUE)){ OPPUSHD(NEGATIVE_INF); }else{ OPPUSHD(value);}
 #define TO_LONG(value)  if (isNaN(value)){ OPPUSH(0); }else if(IS_OVERFLOW(value,LONG_MAX_VALUE)){ OPPUSH(LONG_MAX_VALUE); }else if(IS_UNDERFLOW(value,LONG_MIN_VALUE)){ OPPUSH(LONG_MIN_VALUE); }else{ OPPUSH(Math.round(value));}
 
 DEFOP(AALOAD)
@@ -70,7 +70,7 @@ DEFOP(ANEWARRAY)
         JVM_THROWS_NEW(java.lang.NegativeArraySizeException);
     }
     var clRef = frame.classRef.constantPool.get((indexbyte1 << 8) | indexbyte2);
-    var instance = {length:count, value:[], 'class':this.jvm.classForName(clRef)};
+    var instance = {length:count, value:[], 'class':xl.jvm.classForName(clRef)};
     OPPUSH(instance);
 ENDDEF
 
@@ -532,7 +532,7 @@ DEFOP(GETFIELD)
     var objectref = OPPOP();
     
     CHECK_NULL(objectref)
-    field = objectref["class"].constantPool[(indexbyte1 << 8) | indexbyte2];
+    var field = objectref["class"].constantPool[(indexbyte1 << 8) | indexbyte2];
     //check if static
     OPPUSH(objectref[canonicalName(field.class_ref.name_ref.str) + " " + field.name_and_type_ref.name_ref.str]);
 ENDDEF
