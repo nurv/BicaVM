@@ -27,16 +27,19 @@
 #define OPPOP() operand_stack.pop()
 #define OPPUSH(v) operand_stack.push(v)
 
+#define OPPOPD() operand_stack.pop() && operand_stack.pop()
+#define OPPUSHD(v) operand_stack.push(v) && operand_stack.push(null)
+
+#define OPSTACK(v) operand_stack[v]
+#define OPSTACK_LENGTH() operand_stack.length
+
 #define LOCAL_VAR(v) local_variables[v]
 #define OPCODE opcode
 #define PC pc
+#define STACK_MOVE(y,x) OPSTACK(OPSTACK_LENGTH()-y) = OPSTACK(OPSTACK_LENGTH()-x)
 #define READ_NEXT() code[++pc]
 
-
-
-function canonicalName(ref){
-    return ref.str.replace(/\//g,".")
-}
+#define canonicalName(ref) ref.str.replace(/\//g,".")
 
 var JVM = function(params,args){
     this.nativeMappingTable = {}

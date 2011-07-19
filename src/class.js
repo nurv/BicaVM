@@ -232,8 +232,10 @@ ClassDefinition.prototype.initializeClass = function(){
     if (this.super_class && !this.super_class_ref.inited){
         this.super_class_ref.initializeClass();
     }
+
     this.calculateEffectiveMembers();   
-    
+    var that = this
+    this.effectiveFields.each()
     // call <cinit>
     this.inited = true;
 }
