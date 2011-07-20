@@ -9,40 +9,11 @@
  *
  */
 
-#import "opcodes.js"
-#import "types.js"
-#define JVM_THROWS_NEW(exception) throw "VER: throws new exception"
-#ifdef DEBUG_INTRP
-#define LOG_INTRP(x) LOG(x)
-#define DEFALIAS(opx) case opx: if(temp!=null) { temp = pc + ": opx" }
+#include "constantPool.jsh"
+#include "opcodes.jsh"
+#include "types.jsh"
+#include "cpu.jsh" 
 
-#else
-#define LOG_INTRP(x) 
-#define DEFALIAS(opx) case opx:
-#endif
-
-#define PANIC(msg) throw new JVMPanic(msg)
-
-#define DEFOP(opx) case opx: LOG_INTRP(pc + ": opx");
-#define DEFNOP() LOG_INTRP(temp)
-#define ENDDEF break;
-
-#define OPPOP() operand_stack.pop()
-#define OPPUSH(v) operand_stack.push(v)
-
-#define OPPOPD() operand_stack.pop() && operand_stack.pop()
-#define OPPUSHD(v) operand_stack.push(v) && operand_stack.push(null)
-
-#define OPSTACK(v) operand_stack[v]
-#define OPSTACK_LENGTH() operand_stack.length
-
-#define LOCAL_VAR(v) local_variables[v]
-#define OPCODE opcode
-#define PC pc
-#define STACK_MOVE(y,x) OPSTACK(OPSTACK_LENGTH()-y) = OPSTACK(OPSTACK_LENGTH()-x)
-#define READ_NEXT() code[++pc]
-
-#define canonicalName(ref) ref.str.replace(/\//g,".")
 /** @constructor */
 var JVM = function(params,args){
     this.nativeMappingTable = {}
@@ -128,6 +99,6 @@ function interpret(frame){
         var temp = null; 
 #endif
     switch(OPCODE){
-#include "intrp.js"        
+#include "intrp.def"        
     }
 }
