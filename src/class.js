@@ -235,7 +235,6 @@ ClassDefinition.prototype.initializeClass = function(){
 
     this.calculateEffectiveMembers();   
     var that = this
-    this.effectiveFields.each()
     // call <cinit>
     this.inited = true;
 }
