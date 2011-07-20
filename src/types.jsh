@@ -8,7 +8,10 @@
  * Author: Artur Ventura
  *
  */
- 
+
+#ifndef _TYPES_JSH_
+#define _TYPES_JSH_
+
 // Local Variables Types
 #define LOC_VAR_boolean       0x001;
 #define LOC_VAR_byte          0x002;
@@ -86,5 +89,5 @@
     }
 }*/
 
-
+#endif //_TYPES_JSH_
 

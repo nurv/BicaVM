@@ -8,6 +8,8 @@
  * Author: Artur Ventura
  *
  */
+
+#include "constantPool.jsh"
  
 /** @constructor */
 var ExceptionTableEntry = function(dStream, constantPool){

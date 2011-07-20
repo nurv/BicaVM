@@ -9,6 +9,8 @@
  *
  */
 
+#include "constantPool.jsh"
+
 /** @constructor */
 var FieldInfo = function(dStream,constantPool){
     this.access_flags = dStream.getU2();

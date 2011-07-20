@@ -9,24 +9,6 @@
  *
  */
 
-#ifndef DEBUG
-#define LOG(msg)
-#else
-#define LOG(msg) write(msg);\
-    if (console){\
-        console.log(msg);\
-    }
-#endif
-
-#include "linearDataStream.js" 
-#include "constantPool.js"
-#include "attributes.js"
-#include "infos.js"
-#include "class.js"
-#include "cpu.js"
-#include "types.js"
-
-
 var test_jvm;
 function main (args){
     test_jvm = new JVM({},["foo"])
