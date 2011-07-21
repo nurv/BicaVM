@@ -173,12 +173,10 @@ ENDDEF
 DEFOP(DALOAD)
     var index = OPPOP();
     var arrayref = OPPOP();
-    if (arrayref == NULL){
-        JVM_THROWS_NEW(java.lang.NullPointerException);
-    }
-    if (index >= arrayref.length){
-        JVM_THROWS_NEW(java.lang.ArrayIndexOutOfBoundsException);
-    }
+
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
     OPPUSHD(arrayref.value[index]);
 ENDDEF
 
@@ -186,12 +184,10 @@ DEFOP(DASTORE)
     var value = OPPOPD();
     var index = OPPOP();
     var arrayref = OPPOP();
-    if (arrayref == NULL){
-        JVM_THROWS_NEW(java.lang.NullPointerException);
-    }
-    if (index >= arrayref.length){
-        JVM_THROWS_NEW(java.lang.ArrayIndexOutOfBoundsException);
-    }
+
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
     arrayref.value[index] = value;
 ENDDEF
 
@@ -380,12 +376,10 @@ ENDDEF
 DEFOP(FALOAD)
     var index = OPPOP();
     var arrayref = OPPOP();
-    if (arrayref == NULL){
-        JVM_THROWS_NEW(java.lang.NullPointerException);
-    }
-    if (index >= arrayref.length){
-        JVM_THROWS_NEW(java.lang.ArrayIndexOutOfBoundsException);
-    }
+
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
     OPPUSHD(arrayref.value[index]);
 ENDDEF
 
@@ -393,12 +387,10 @@ DEFOP(FASTORE)
     var value = OPPOPD();
     var index = OPPOP();
     var arrayref = OPPOP();
-    if (arrayref == NULL){
-        JVM_THROWS_NEW(java.lang.NullPointerException);
-    }
-    if (index >= arrayref.length){
-        JVM_THROWS_NEW(java.lang.ArrayIndexOutOfBoundsException);
-    }
+
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
     arrayref.value[index] = value;
 ENDDEF
 
@@ -530,5 +522,216 @@ DEFOP(GETFIELD)
 ENDDEF
 
 DEFOP(GETSTATIC)
+    var indexbyte1 = READ_NEXT();
+    var indexbyte2 = READ_NEXT();
     
+    CHECK_NULL(objectref)
+    var field = this_method_cass.constantPool[(indexbyte1 << 8) | indexbyte2];
+    var aClass = field.class_ref.name_ref.str;
+    
+    //check if static
+    OPPUSH(jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref.str) + " " + field.name_and_type_ref.name_ref.str]);
+ENDDEF
+
+DEFOP(GOTO)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    
+    var branchoffset = (branchbyte1 << 8) | branchbyte2;
+    PC = PC + branchoffset;
+ENDDEF
+
+DEFOP(GOTO_W)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var branchbyte3 = READ_NEXT();
+    var branchbyte4 = READ_NEXT();
+    
+    var branchoffset = (branchbyte1 << 24) | (branchbyte2 << 16) | (branchbyte3 << 8) | branchbyte4;
+    PC = PC + branchoffset;
+ENDDEF
+
+DEFOP(I2B)
+    var value = OPPOP();
+
+    if (IS_OVERFLOW(value,BYTE_MAX_VALUE) || IS_UNDERFLOW(result,BYTE_MIN_VALUE)){
+        OPPUSH(BYTE_OVERFLOW(value));
+    }else{
+        OPPUSH(value);
+    }
+ENDDEF
+
+DEFOP(I2C)
+    var value = OPPOP()
+    
+    if (IS_OVERFLOW(value,CHAR_MAX_VALUE) || IS_UNDERFLOW(result,CHAR_MIN_VALUE)){
+        OPPUSH(CHAR_OVERFLOW(value));
+    }else{
+        OPPUSH(value);
+    }
+ENDDEF
+
+DEFOP(I2D)
+    OPPUSH(null);
+ENDDEF
+
+DEFOP(I2F)
+    OPPUSH(null);
+ENDDEF
+
+DEFOP(I2L)
+    //NOP because it is the same size.
+ENDDEF
+
+DEFOP(IADD)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    var result = value1 + value2;
+    if (IS_OVERFLOW(result,INT_MAX_VALUE) || IS_UNDERFLOW(result,INT_MIN_VALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(IALOAD)
+    var index = OPPOP();
+    var arrayref = OPPOP();
+
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
+    OPPUSH(arrayref.value[index]);
+ENDDEF
+
+DEFOP(IAND)
+    var value1 = OPPOP()
+    var value2 = OPPOP()
+    var result = value1 & value2
+    OPPUSH(result);
+ENDDEF
+
+DEFOP(IASTORE)
+    var index = OPPOP();
+    var arrayref = OPPOP();
+    var value = OPPOP();
+    
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
+    arrayref.value[index] = value;
+ENDDEF
+
+DEFALIAS(ICONST_M1)
+DEFALIAS(ICONST_0)
+DEFALIAS(ICONST_1)
+DEFALIAS(ICONST_2)
+DEFALIAS(ICONST_3)
+DEFALIAS(ICONST_4)
+DEFALIAS(ICONST_5)
+DEFNOP()
+    OPPUSH(OPCODE - ICONST_0)
+ENDDEF
+
+DEFOP(IDIV)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if(value2 == 0){
+        JVM_THROWS_NEW(java.lang.ArithmeticException);
+    }
+    
+    var result = Math.round(value1 / value2);
+    if (IS_OVERFLOW(result,INT_MAX_VALUE) || IS_UNDERFLOW(result,INT_MIN_VALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(IF_ACMPEQ)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if (value1 == value2){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IF_ACMPNE)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if (value1 != value2){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IF_ICMPEQ)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if (value1 == value2){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IF_ICMPNE)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if (value1 != value2){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IF_ICMPLT)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if (value1 < value2){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IF_ICMPLE)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if (value1 <= value2){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IF_ICMPGT)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if (value1 < value2){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IF_ICMPLE)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if (value1 <= value2){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
 ENDDEF

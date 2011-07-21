@@ -223,7 +223,13 @@ ClassDefinition.prototype.initializeClass = function(){
     }
 
     this.calculateEffectiveMembers();   
-    var that = this
+    for (var i=0; i<this.fields_count; i++){
+        var f = this.fields[i];
+        if(f.access_flags & ACC_STATIC){
+            this[this.this_class.name_ref.str + " " + f.name_ref.str] = (f.primitive)?0:null;
+        }
+    }
+    
     // call <cinit>
     this.inited = true;
 }
@@ -263,7 +269,9 @@ ClassDefinition.prototype.makeInstance = function(){
     if (!this.inited) { this.initializeClass(); }
     var newInstance = {};
     for(var k in this.effectiveFields){
-        newInstance[k] = (this.effectiveFields[k].primitive)?0:null;
+        if (!(this.effectiveFields[k].access_flags & ACC_STATIC)){
+            newInstance[k] = (this.effectiveFields[k].primitive)?0:null;
+        }
     }
     newInstance["class"] = this;
     return newInstance;

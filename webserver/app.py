@@ -25,9 +25,9 @@ class index:
         if filename.endswith("favicon.ico"):
             web.webapi.notfound()
             return ""
-        if filename.endswith(".js"):
+        if filename == "jvm.js":
             web.header('Content-Type', 'text/javascript')
-            return commands.getstatusoutput("/usr/bin/cpp -P -DDEBUG -DDEBUG_INTRP -undef -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers ../src/" + filename)[1]
+            return commands.getstatusoutput("cat ../src/*.js | cpp -DDEBUG -DDEBUG_INTRP -I../src/ -P -undef -CC -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers")[1]
         if "testRuntime" in filename:
             alphex = filename[filename.rfind("/") + 1:];
             return file("../runtime/" + alphex.replace(".","/") + ".class");
