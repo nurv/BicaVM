@@ -496,7 +496,7 @@ DEFNOP()
     LOCAL_VAR(index) = value;
 ENDDEF
 
-DEFOP(FSUB)
+DEFOP(FLOAT_MAX_VALUE)
     var value2 = OPPOPD()
     var value1 = OPPOPD()
     var result = value2 % value1
@@ -641,11 +641,7 @@ DEFOP(IDIV)
     }
     
     var result = Math.round(value1 / value2);
-    if (IS_OVERFLOW(result,INT_MAX_VALUE) || IS_UNDERFLOW(result,INT_MIN_VALUE)){
-        OPPUSH(INT_OVERFLOW(result));
-    }else{
-        OPPUSH(result);
-    }
+    OPPUSH(result);
 ENDDEF
 
 DEFOP(IF_ACMPEQ)
@@ -869,17 +865,343 @@ DEFOP(INSTANCEOF)
     var indexbyte2 = READ_NEXT();
 
     var objectref = OPPOP();
-
+    if (objectref == null){ 
+        OPPUSH(0); 
+        break; 
+    }
     var className = canonicalName(this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2].name_ref.str);
 
-    objectref["class"].isAssignable(jvm.classForName(className);
+    if(objectref["class"].isAssignable(jvm.classForName(className))){
+        OPPUSH(1);
+    }else{
+        OPPUSH(0);
+    }
 ENDDEF
+
+//###############################
+//## INVOKES !
+//###############################
 
 DEFOP(INVOKEINTERFACE)
    var indexbyte1 = READ_NEXT();
    var indexbyte2 = READ_NEXT();
    var count = READ_NEXT();
    /* expected 0*/ READ_NEXT();
+   var args = [];
 
-   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2]
+   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
+   for(var i=0; i<method.descriptor.args.length; i++){
+       args.push(OPPOP());
+   }
+   var objectref = OPPOP();
+   
+   PANIC("NOT IMPLEMENTED YET");
 ENDDEF
+
+DEFOP(INVOKESPECIAL)
+   var indexbyte1 = READ_NEXT();
+   var indexbyte2 = READ_NEXT();
+   var args = [];
+
+   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
+   for(var i=0; i<method.descriptor.args.length; i++){
+       args.push(OPPOP());
+   }
+   
+   var objectref = OPPOP();
+   PANIC("NOT IMPLEMENTED YET");
+ENDDEF
+
+DEFOP(INVOKESTATIC)
+   var indexbyte1 = READ_NEXT();
+   var indexbyte2 = READ_NEXT();
+   var args = [];
+
+   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
+   for(var i=0; i<method.descriptor.args.length; i++){
+       args.push(OPPOP());
+   }
+   
+   PANIC("NOT IMPLEMENTED YET");
+ENDDEF
+
+DEFOP(INVOKESTATIC)
+   var indexbyte1 = READ_NEXT();
+   var indexbyte2 = READ_NEXT();
+   var args = [];
+
+   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
+   for(var i=0; i<method.descriptor.args.length; i++){
+       args.push(OPPOP());
+   }
+   
+   PANIC("NOT IMPLEMENTED YET");
+ENDDEF
+
+DEFOP(IOR)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+
+    OPPUSH(INT_OVERFLOW(value1 | value2));
+ENDDEF
+
+DEFOP(IREM)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if(value2 == 0){
+        JVM_THROWS_NEW(java.lang.ArithmeticException);
+    }
+
+    var result = value1 - Math.round(value1 / value2) * value2
+    if (IS_OVERFLOW(result,INT_MAX_VALUE) || IS_UNDERFLOW(result,INT_MIN_VALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(IRETURN)
+    var objectref = OPPOP();
+    return {return_object: objectref}
+ENDDEF
+
+DEFOP(ISHL)
+    var value2 = OPPOP();
+    var value1 = OPPOP();
+    var result = value1 << (value2 & 0x1f);
+    
+    if (IS_OVERFLOW(result,INT_MAX_VALUE) || IS_UNDERFLOW(result,INT_MIN_VALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(ISHR)
+    var value2 = OPPOP();
+    var value1 = OPPOP();
+    var result = value1 >> (value2 & 0x1f);
+
+    if (IS_OVERFLOW(result,INT_MAX_VALUE) || IS_UNDERFLOW(result,INT_MIN_VALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(ISTORE)
+    var index = READ_NEXT();
+    LOCAL_VAR(index) = OPPOP();
+ENDDEF
+
+DEFALIAS(ISTORE_0)
+DEFALIAS(ISTORE_1)
+DEFALIAS(ISTORE_2)
+DEFALIAS(ISTORE_3)
+DEFNOP()
+    LOCAL_VAR(READ_NEXT()) = (OPCODE - ISTORE_0);
+ENDDEF
+
+DEFOP(ISUB)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    var result = value1 - value2;
+    if (IS_UNDERFLOW(result,INT_MAX_VALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(IUSHR)
+    var value2 = OPPOP();
+    var value1 = OPPOP();
+    OPPUSH((value1<0)?(value1 >> (value2 & 0x1f)) + (2 << ~s):value1 >> (value2 & 0x1f))
+ENDDEF
+
+DEFOP(IXOR)
+    var value2 = OPPOP();
+    var value1 = OPPOP();
+    OPPUSH(INT_OVERFLOW(value1 ^ value2));
+ENDDEF
+
+DEFOP(JSR)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    OPPUSH(PC + 1);
+    PC = (branchbyte1 << 8) | branchbyte2
+ENDDEF
+
+DEFOP(JSR_W)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var branchbyte3 = READ_NEXT();
+    var branchbyte4 = READ_NEXT();
+    
+    OPPUSH(PC + 1);
+    PC = (branchbyte1 << 24) | (branchbyte2 << 16) | (branchbyte3 << 8) | branchbyte4
+ENDDEF
+
+DEFOP(L2D)
+    OPPUSH(null);
+ENDDEF
+
+DEFOP(L2F)
+    OPPUSH(null);
+ENDDEF
+
+DEFOP(L2I)
+    var value = OPPOP()
+    
+    if (IS_OVERFLOW(value,LONG_MAX_VALUE) || IS_UNDERFLOW(result,LONG_MIN_VALUE)){
+        OPPUSH(LONG_OVERFLOW(value));
+    }else{
+        OPPUSH(value);
+    }
+ENDDEF
+
+DEFOP(LADD)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    var result = value1 + value2;
+    if (IS_OVERFLOW(result,LONG_MAX_VALUE)){
+        OPPUSH(LONG_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(LALOAD)
+    var index = OPPOP();
+    var arrayref = OPPOP();
+
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
+    OPPUSH(arrayref.value[index]);
+ENDDEF
+
+DEFOP(LAND)
+    var value1 = OPPOP()
+    var value2 = OPPOP()
+    var result = value1 & value2
+    OPPUSH(result);
+ENDDEF
+
+DEFOP(LASTORE)
+    var index = OPPOP();
+    var arrayref = OPPOP();
+    var value = OPPOP();
+    
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
+    arrayref.value[index] = value;
+ENDDEF
+
+DEFOP(LCMP)
+    var value2 = OPPOP();
+    var value1 = OPPOP();
+    
+    if (value1 > value2){
+        OPPUSH(1);
+    }else if (value1 == value2){
+        OPPUSH(0);
+    }else{
+        OPPUSH(-1)
+    }
+ENDDEF
+
+
+DEFALIAS(LCONST_0)
+DEFALIAS(LCONST_1)
+DEFNOP()
+    OPPUSH(OPCODE - LCONST_0)
+ENDDEF
+
+DEFOP(LDC)
+    var index = READ_NEXT();
+    var cstt = this_method_class.constantPool.get(index);
+    switch(cstt.id){
+        case CONSTANT_Integer:
+        case CONSTANT_Float:
+        case CONSTANT_Double:
+        case CONSTANT_Long:
+            OPPUSH(cstt.value);
+        case CONSTANT_String:
+            PANIC("NEW STRING FROM CONSTANT POOL NOT IMPLEMENTED");
+        default:
+            PANIC("What now?");        
+    }
+ENDDEF
+
+DEFOP(LDC_W)
+    var index1 = READ_NEXT();
+    var index2 = READ_NEXT();
+    var index = (indexbyte1 << 8) | indexbyte2
+    var cstt = this_method_class.constantPool.get(index);
+    switch(cstt.id){
+        case CONSTANT_Integer:
+            OPPUSHD(cstt.value);
+        case CONSTANT_Float:
+            OPPUSH(cstt.value);
+        case CONSTANT_String:
+            PANIC("NEW STRING FROM CONSTANT POOL NOT IMPLEMENTED");
+        default:
+            PANIC("What now?");        
+    }
+ENDDEF
+
+DEFOP(LDC2_W)
+    var index1 = READ_NEXT();
+    var index2 = READ_NEXT();
+    var index = (indexbyte1 << 8) | indexbyte2
+    var cstt = this_method_class.constantPool.get(index);
+    OPPUSHD(cstt.value);
+ENDDEF
+
+DEFOP(LDIV)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if(value2 == 0){
+        JVM_THROWS_NEW(java.lang.ArithmeticException);
+    }
+    
+    var result = Math.round(value1 / value2);
+    OPPUSH(result);
+ENDDEF
+
+DEFOP(LLOAD)
+    var index = READ_NEXT();
+    OPPUSH(LOCAL_VAR(index));
+ENDDEF
+
+DEFALIAS(LLOAD_0)
+DEFALIAS(LLOAD_1)
+DEFALIAS(LLOAD_2)
+DEFALIAS(LLOAD_3)
+DEFNOP()
+    OPPUSH(OPCODE - LLOAD_0);
+ENDDEF
+
+DEFOP(LMUL)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    var result = value1 * value2;
+    if (IS_OVERFLOW(result,INT_MAX_VALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(LNEG)
+    var value = OPPOP();
+    var result = 0 - value;
+    if (IS_OVERFLOW(result,INT_MAX_VALUE) || IS_UNDERFLOW(result,INT_MINVALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+

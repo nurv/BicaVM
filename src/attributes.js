@@ -33,7 +33,8 @@ var InnerClass = function(dStream, constantPool){
     }else{
         this.outer_class_info = null;   
     }
-    this.inner_name = ConstantPoolRef(dStream.getU2(), constantPool,CONSTANT_Utf8);
+    var innerNameIndex = dStream.getU2();
+    this.inner_name = (innerNameIndex)?ConstantPoolRef(innerNameIndex, constantPool,CONSTANT_Utf8):null;
     this.inner_class_access_flags = dStream.getU2();
 }
 

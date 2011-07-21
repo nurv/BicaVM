@@ -65,6 +65,7 @@ var JVM = function(params,args){
         this.java_lang_object = this.classForName("java.lang.Object");
         this.java_lang_cloneable = this.classForName("java.lang.Cloneable");
         this.java_io_serializable = this.classForName("java.io.Serializable");
+        this.java_lang_string = this.classForName("java.lang.String");
         this.mainClass = this.args[0];
         this.classForName(this.mainClass).makeInstance();
     };

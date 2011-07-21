@@ -286,8 +286,6 @@ function LoadClassFile (x,jvm){
     }else{
         def.makeForArray(x);
     }
-    
-    
     return def;
 }
 

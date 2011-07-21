@@ -11,6 +11,13 @@
 
 #include "constantPool.jsh"
 
+function parseArgs(description){
+//     "([Ljava/lang/String;)V"
+    var length = description.length
+    var sides = description.substr(1,length).split(")")
+    return {args:sides[0].split(","),ret:sides[1]};
+}
+
 /** @constructor */
 var FieldInfo = function(dStream,constantPool){
     this.access_flags = dStream.getU2();
@@ -30,6 +37,7 @@ var MethodInfo = function(dStream, constantPool){
     this.access_flags = dStream.getU2();
     this.name_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
     this.descriptor_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
+    this.descriptor = parseArgs(this.descriptor_ref.str);
     this.attributes_count = dStream.getU2();
     this.attributes = [];
     for (var i=0; i<this.attributes_count; i++){
