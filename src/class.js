@@ -253,11 +253,13 @@ ClassDefinition.prototype.calculateEffectiveMembers = function(){
         this.effectiveMethods = {}
         for(var k in superEffective[1]){
             this.effectiveMethods[k] = superEffective[1][k];
+            this[k] = superEffective[1][k];
         }
         
         for(var i=0; i<this.methods_count; i++){
             var method = this.methods[i]
-            this.effectiveMethods[this.this_class.name_ref.str + " " + method.name_ref.str + method.descriptor_ref.str] = method;
+            this.effectiveMethods["method " + method.name_ref.str + method.descriptor_ref.str] = method;
+            this["method " + method.name_ref.str + method.descriptor_ref.str] = method;
         }
 
     }

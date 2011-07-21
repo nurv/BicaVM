@@ -526,7 +526,7 @@ DEFOP(GETSTATIC)
     var indexbyte2 = READ_NEXT();
     
     CHECK_NULL(objectref)
-    var field = this_method_cass.constantPool[(indexbyte1 << 8) | indexbyte2];
+    var field = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
     var aClass = field.class_ref.name_ref.str;
     
     //check if static
@@ -587,7 +587,7 @@ DEFOP(IADD)
     var value1 = OPPOP();
     var value2 = OPPOP();
     var result = value1 + value2;
-    if (IS_OVERFLOW(result,INT_MAX_VALUE) || IS_UNDERFLOW(result,INT_MIN_VALUE)){
+    if (IS_OVERFLOW(result,INT_MAX_VALUE)){
         OPPUSH(INT_OVERFLOW(result));
     }else{
         OPPUSH(result);
@@ -719,19 +719,167 @@ DEFOP(IF_ICMPGT)
     var branchbyte2 = READ_NEXT();
     var value1 = OPPOP();
     var value2 = OPPOP();
-    if (value1 < value2){
+    if (value1 > value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
         PC = PC + branchoffset;
     }
 ENDDEF
 
-DEFOP(IF_ICMPLE)
+DEFOP(IF_ICMPGE)
     var branchbyte1 = READ_NEXT();
     var branchbyte2 = READ_NEXT();
     var value1 = OPPOP();
     var value2 = OPPOP();
-    if (value1 <= value2){
+    if (value1 >= value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
         PC = PC + branchoffset;
     }
+ENDDEF
+
+DEFOP(IFEQ)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value = OPPOP();
+
+    if (value == 0){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IFNE)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value = OPPOP();
+
+    if (value != 0){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IFLT)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value = OPPOP();
+
+    if (value < 0){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IFLE)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value = OPPOP();
+
+    if (value <= 0){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IFGT)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value = OPPOP();
+
+    if (value > 0){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IFGE)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value = OPPOP();
+
+    if (value >= 0){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IFNONNULL)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value = OPPOP();
+
+    if (value != NULL){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IFNULL)
+    var branchbyte1 = READ_NEXT();
+    var branchbyte2 = READ_NEXT();
+    var value = OPPOP();
+
+    if (value != NULL){
+        var branchoffset = (branchbyte1 << 8) | branchbyte2;
+        PC = PC + branchoffset;
+    }
+ENDDEF
+
+DEFOP(IINC)
+    var index = READ_NEXT();
+    var aConst = READ_NEXT();
+    LOCAL_VAR(index)++;
+ENDDEF
+
+DEFOP(ILOAD)
+    var index = READ_NEXT();
+    OPPUSH(LOCAL_VAR(index));
+ENDDEF
+
+DEFALIAS(ILOAD_0)
+DEFALIAS(ILOAD_1)
+DEFALIAS(ILOAD_2)
+DEFALIAS(ILOAD_3)
+DEFNOP()
+    OPPUSH(OPCODE - ILOAD_0);
+ENDDEF
+
+DEFOP(IMUL)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    var result = value1 * value2;
+    if (IS_OVERFLOW(result,INT_MAX_VALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(INEG)
+    var value = OPPOP();
+    var result = 0 - value;
+    if (IS_OVERFLOW(result,INT_MAX_VALUE) || IS_UNDERFLOW(result,INT_MINVALUE)){
+        OPPUSH(INT_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(INSTANCEOF)
+    var indexbyte1 = READ_NEXT();
+    var indexbyte2 = READ_NEXT();
+
+    var objectref = OPPOP();
+
+    var className = canonicalName(this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2].name_ref.str);
+
+    objectref["class"].isAssignable(jvm.classForName(className);
+ENDDEF
+
+DEFOP(INVOKEINTERFACE)
+   var indexbyte1 = READ_NEXT();
+   var indexbyte2 = READ_NEXT();
+   var count = READ_NEXT();
+   /* expected 0*/ READ_NEXT();
+
+   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2]
 ENDDEF
