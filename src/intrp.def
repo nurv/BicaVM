@@ -1125,13 +1125,14 @@ DEFOP(LDC)
     switch(cstt.id){
         case CONSTANT_Integer:
         case CONSTANT_Float:
-        case CONSTANT_Double:
-        case CONSTANT_Long:
             OPPUSH(cstt.value);
+            break;
         case CONSTANT_String:
             PANIC("NEW STRING FROM CONSTANT POOL NOT IMPLEMENTED");
+            break;
         default:
             PANIC("What now?");        
+            break;
     }
 ENDDEF
 
@@ -1143,10 +1144,13 @@ DEFOP(LDC_W)
     switch(cstt.id){
         case CONSTANT_Integer:
             OPPUSHD(cstt.value);
+            break;
         case CONSTANT_Float:
             OPPUSH(cstt.value);
+            break;
         case CONSTANT_String:
             PANIC("NEW STRING FROM CONSTANT POOL NOT IMPLEMENTED");
+            break;
         default:
             PANIC("What now?");        
     }
