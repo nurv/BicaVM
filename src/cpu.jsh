@@ -16,7 +16,7 @@
 #define JVM_THROWS_NEW(exception) throw "VER: throws new exception"
 #ifdef DEBUG_INTRP
 #define LOG_INTRP(x) LOG(x)
-#define DEFALIAS(opx) case opx: if(temp!=null) { temp = pc + ": opx" }
+#define DEFALIAS(opx) case opx: if(!temp) { temp = pc + ": opx op:[" + operand_stack + "] lvar:[" + local_variables + "]"; }
 
 #else
 #define LOG_INTRP(x) 
@@ -25,7 +25,7 @@
 
 #define PANIC(msg) throw new JVMPanic(msg)
 
-#define DEFOP(opx) case opx: LOG_INTRP(pc + ": opx");
+#define DEFOP(opx) case opx: LOG_INTRP(pc + ": opx op:[" + operand_stack + "] lvar:[" + local_variables + "]");
 #define DEFNOP() LOG_INTRP(temp)
 #define ENDDEF break;
 
@@ -42,7 +42,7 @@
 #define OPCODE opcode
 #define PC pc
 #define STACK_MOVE(y,x) OPSTACK(OPSTACK_LENGTH()-y) = OPSTACK(OPSTACK_LENGTH()-x)
-#define READ_NEXT() code[++pc]
+#define READ_NEXT() code[pc++]
 
 #define CHECK_NULL(ref) if (ref == NULL){ JVM_THROWS_NEW(java.lang.NullPointerException); }
 #define CHECK_ARRAY_INDEX(ind,ref) if (ind >= ref.length){ JVM_THROWS_NEW(java.lang.ArrayIndexOutOfBoundsException); }

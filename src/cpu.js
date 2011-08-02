@@ -66,8 +66,13 @@ var JVM = function(params,args){
         this.java_lang_cloneable = this.classForName("java.lang.Cloneable");
         this.java_io_serializable = this.classForName("java.io.Serializable");
         this.java_lang_string = this.classForName("java.lang.String");
-        this.mainClass = this.args[0];
-        this.classForName(this.mainClass).makeInstance();
+        this.main_class = this.classForName(this.args[0])
+        this.main_class.initializeClass();
+        var method = this.main_class["method main([Ljava/lang/String;)V"];
+        if (method == null){
+            PANIC(this.args[0] + " doesn't have a a main method");
+        }
+        method.invoke(null,this.main_class);
     };
 };
 /** @constructor */
@@ -86,20 +91,29 @@ function JVMPanic(message){
     this.toString = function(){
         return "JVMPanic: " + message
     }
-};
+}
 
-function interpret(frame){
+function interpret(frame,code,method,xl){
     var operand_stack = frame.operand_stack;
     var local_variables = frame.local_variables;
-    var code = 0; //resolve code from method;
     var opcode;
-    var pc;
-    var xl;
-    
+    var pc = 0;
+
 #ifdef DEBUG_INTRP
         var temp = null; 
 #endif
+    while(pc < code.length){
+    opcode = READ_NEXT();
     switch(OPCODE){
 #include "intrp.def"
+    default:
+        PANIC("Invalid OPCODE " + opcode);
     }
+#ifdef DEBUG_INTRP
+    temp = null;
+#endif
+    }
+    PANIC("PC overran CODE");
 }
+
+

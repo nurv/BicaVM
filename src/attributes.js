@@ -10,6 +10,7 @@
  */
 
 #include "constantPool.jsh"
+#include "attributes.jsh"
  
 /** @constructor */
 var ExceptionTableEntry = function(dStream, constantPool){
@@ -56,6 +57,7 @@ var LocalVariableTableEntry = function(dStream, constantPool){
 var Attributes_table = {
     /** @constructor */
     ConstantValue: function(){
+        this.id = ATTR_CONSTANT_VALUE;
         this.read = function(dStream, constantPool){
             this.constantvalue = ConstantPoolRef(dStream.getU2(), constantPool);
             switch(this.constantvalue.id){
@@ -73,6 +75,7 @@ var Attributes_table = {
     },
     /** @constructor */
     Code: function(){
+        this.id = ATTR_CODE;
         this.read = function(dStream, constantPool){
             this.max_stack = dStream.getU2();
             this.max_locals = dStream.getU2();
@@ -110,6 +113,7 @@ var Attributes_table = {
     },
     /** @constructor */
     Exceptions: function(){
+        this.id = ATTR_EXCEPTIONS;
         this.read = function(dStream, constantPool){
             this.number_of_exceptions = dStream.getU2();
             this.exception_table = [];
@@ -120,6 +124,7 @@ var Attributes_table = {
     },
     /** @constructor */
     InnerClasses: function(){
+        this.id = ATTR_INNER_CLASSES;
         this.read = function(dStream, constantPool){
             this.number_of_classes = dStream.getU2();
             this.classes = [];
@@ -130,6 +135,7 @@ var Attributes_table = {
     },
     /** @constructor */
     Synthetic: function(){
+        this.id = ATTR_SYNTHETIC;
         this.read = function(dStream,constantPool){
             if (this.attribute_length != 0){
                 throw "Synthetic Attr length not 0";
@@ -138,12 +144,14 @@ var Attributes_table = {
     },
     /** @constructor */
     SourceFile: function(){
+        this.id = ATTR_SOURCE_FILE;
         this.read = function(dStream,constantPool){
             this.soucefile = ConstantPoolRef(dStream.getU2(), constantPool,CONSTANT_Utf8);
         }
     },
     /** @constructor */
     LineNumberTable: function(){
+        this.id = ATTR_LINE_NUMBER_TABLE;
         this.read = function(dStream,constantPool){
             this.line_number_table_length = dStream.getU2();
             this.line_number_table = [];
@@ -154,6 +162,7 @@ var Attributes_table = {
     },
     /** @constructor */
     LocalVariableTable: function(){
+        this.id = ATTR_LOCAL_VARIABLE_TABLE;
         this.read=function(dStream,constantPool){
             this.local_variable_table_length = dStream.getU2();
             this.local_variable_table = [];
@@ -164,6 +173,7 @@ var Attributes_table = {
     },
     /** @constructor */
     Deprecated: function(){
+        this.id = ATTR_DEPRECATED;
         this.read = function(dStream,constantPool){
             if (this.attribute_length != 0){
                 throw "Synthetic Attr length not 0";
@@ -173,6 +183,7 @@ var Attributes_table = {
 };
 /** @constructor */
 function UnkownAttr(){
+    this.id = ATTR_UNKOWNATTR;
     this.read = function(dStream){
         this.info = [];
         for(var i=0; i<this.attribute_length; i++){

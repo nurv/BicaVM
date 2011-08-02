@@ -43,4 +43,13 @@ var MethodInfo = function(dStream, constantPool){
     for (var i=0; i<this.attributes_count; i++){
         this.attributes[i] = Attribute(dStream,constantPool);
     }
+    this.invoke = function (self,xl){
+        var frame = { operand_stack: [], local_variables:[] };
+        for (var i=0; i<this.attributes_count; i++){
+            var attr = this.attributes[i];
+            if (attr.id == ATTR_CODE){
+                interpret(frame,attr.code,this,xl);
+            }
+        }
+    }
 }
