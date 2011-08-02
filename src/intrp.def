@@ -62,7 +62,7 @@ DEFOP(ANEWARRAY)
         JVM_THROWS_NEW(java.lang.NegativeArraySizeException);
     }
     var clRef = frame.classRef.constantPool.get((indexbyte1 << 8) | indexbyte2);
-    var instance = {length:count, value:[], 'class':xl.jvm.classForName(clRef)};
+    var instance = {length:count, dimensions:1, value:[], 'class':xl.jvm.classForName(clRef)};
     OPPUSH(instance);
 ENDDEF
 
@@ -1209,3 +1209,327 @@ DEFOP(LNEG)
     }
 ENDDEF
 
+DEFOP(LOOKUPSWITCH)
+    var shift = PC % 4;
+    var instrPC = PC - 1
+    if (shift != 0){
+        switch(shift){
+            case 1:
+            READ_NEXT();
+            case 2:
+            READ_NEXT();
+            case 3:
+            READ_NEXT();
+        }
+    }
+    var stack_key = OPPOP();
+    
+    var defaultbyte1 = READ_NEXT();
+    var defaultbyte2 = READ_NEXT();
+    var defaultbyte3 = READ_NEXT();
+    var defaultbyte4 = READ_NEXT();
+    var jmp = QWORD(defaultbyte1,defaultbyte2,defaultbyte3,defaultbyte4);
+    
+    var npair1 = READ_NEXT();
+    var npair2 = READ_NEXT();
+    var npair3 = READ_NEXT();
+    var npair4 = READ_NEXT();
+    var npair = QWORD(npair1,npair2,npair3,npair4);
+
+    for(var i=0; i<npair; i++){
+        var key1 = READ_NEXT();
+        var key2 = READ_NEXT();
+        var key3 = READ_NEXT();
+        var key4 = READ_NEXT();
+        var key = QWORD(key1,key2,key3,key4);
+        
+        var value1 = READ_NEXT();
+        var value2 = READ_NEXT();
+        var value3 = READ_NEXT();
+        var value4 = READ_NEXT();
+        var value = QWORD(value1,value2,value3,value4);
+        
+        if(key == stack_key){
+            jmp = instrPC + value;
+        }
+    }
+    PC = instrPC + jmp;
+ENDDEF
+
+DEFOP(LOR)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+
+    OPPUSH(LONG_OVERFLOW(value1 | value2));
+ENDDEF
+
+DEFOP(LREM)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    if(value2 == 0){
+        JVM_THROWS_NEW(java.lang.ArithmeticException);
+    }
+
+    var result = value1 - Math.round(value1 / value2) * value2
+    if (IS_OVERFLOW(result,LONG_MAX_VALUE) || IS_UNDERFLOW(result,LONG_MIN_VALUE)){
+        OPPUSH(LONG_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(LRETURN)
+    var objectref = OPPOP();
+    return {return_object: objectref}
+ENDDEF
+
+DEFOP(LSHL)
+    var value2 = OPPOP();
+    var value1 = OPPOP();
+    var result = value1 << (value2 & 0x1f);
+    
+    if (IS_OVERFLOW(result,LONG_MAX_VALUE) || IS_UNDERFLOW(result,LONG_MIN_VALUE)){
+        OPPUSH(LONG_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(LSHR)
+    var value2 = OPPOP();
+    var value1 = OPPOP();
+    var result = value1 >> (value2 & 0x1f);
+
+    if (IS_OVERFLOW(result,LONG_MAX_VALUE) || IS_UNDERFLOW(result,LONG_MIN_VALUE)){
+        OPPUSH(LONG_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(LSTORE)
+    var index = READ_NEXT();
+    LOCAL_VAR(index) = OPPOP();
+ENDDEF
+
+DEFALIAS(LSTORE_0)
+DEFALIAS(LSTORE_1)
+DEFALIAS(LSTORE_2)
+DEFALIAS(LSTORE_3)
+DEFNOP()
+    LOCAL_VAR(READ_NEXT()) = (OPCODE - LSTORE_0);
+ENDDEF
+
+DEFOP(LSUB)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    var result = value1 - value2;
+    if (IS_UNDERFLOW(result,LONG_MAX_VALUE)){
+        OPPUSH(LONG_OVERFLOW(result));
+    }else{
+        OPPUSH(result);
+    }
+ENDDEF
+
+DEFOP(LUSHR)
+    var value2 = OPPOP();
+    var value1 = OPPOP();
+    OPPUSH((value1<0)?(value1 >> (value2 & 0x1f)) + (2 << ~s):value1 >> (value2 & 0x1f))
+ENDDEF
+
+DEFOP(LXOR)
+    var value2 = OPPOP();
+    var value1 = OPPOP();
+    OPPUSH(LONG_OVERFLOW(value1 ^ value2));
+ENDDEF
+
+DEFOP(MONITORENTER)
+    PANIC("THREADING NOT IMPLEMENTED YET");
+ENDDEF
+
+DEFOP(MONITOREXIT)
+    PANIC("THREADING NOT IMPLEMENTED YET");
+ENDDEF
+
+DEFOP(MULTIANEWARRAY)
+    var indexbyte1 = READ_NEXT();
+    var indexbyte2 = READ_NEXT();
+    var dimensions = READ_NEXT();
+    var counts = [];
+    for(var i=0; i<dimensions; i++){
+        counts.add(OPPOP());
+    }
+    var clRef = frame.classRef.constantPool.get((indexbyte1 << 8) | indexbyte2);
+    var instance = {length:counts, dimensions:dimensions, value:[], 'class':xl.jvm.classForName(clRef)};
+    OPPUSH(instance);
+ENDDEF
+
+DEFOP(NEW)
+    var indexbyte1 = READ_NEXT();
+    var indexbyte2 = READ_NEXT();
+    
+    var clRef = frame.classRef.constantPool.get((indexbyte1 << 8) | indexbyte2);
+    var newInstance = xl.jvm.classForName(clRef).makeInstance();
+    OPPUSH(newInstance);
+ENDDEF
+
+DEFOP(NOP)
+ENDDEF
+
+DEFOP(POP)
+    OPPOP();
+ENDDEF
+
+DEFOP(POP2)
+    OPPOP();
+    OPPOP();
+ENDDEF
+
+DEFOP(PUTFIELD)
+    var indexbyte1 = READ_NEXT();
+    var indexbyte2 = READ_NEXT();
+    var value = OPPOP();
+    var objectref = OPPOP();
+    
+    CHECK_NULL(objectref)
+    var field = objectref["class"].constantPool[(indexbyte1 << 8) | indexbyte2];
+    //check if static
+    objectref[canonicalName(field.class_ref.name_ref.str) + " " + field.name_and_type_ref.name_ref.str] = value;
+ENDDEF
+
+DEFOP(GETSTATIC)
+    var indexbyte1 = READ_NEXT();
+    var indexbyte2 = READ_NEXT();
+    var value = OPPOP();
+    
+    CHECK_NULL(objectref)
+    var field = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
+    var aClass = field.class_ref.name_ref.str;
+    
+    //check if static
+    jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref.str) + " " + field.name_and_type_ref.name_ref.str] = value;
+ENDDEF
+
+DEFOP(RET)
+    var index = READ_NEXT();
+    PC = LOCAL_VAR(index);
+ENDDEF
+
+DEFOP(RETURN)
+    return;
+ENDDEF
+
+DEFOP(SALOAD)
+    var index = OPPOP();
+    var arrayref = OPPOP();
+
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
+    OPPUSH(arrayref.value[index]);
+ENDDEF
+
+DEFOP(SASTORE)
+    var index = OPPOP();
+    var arrayref = OPPOP();
+    var value = OPPOP();
+    
+    CHECK_NULL(arrayref);
+    CHECK_ARRAY_INDEX(index,arrayref);
+
+    arrayref.value[index] = value;
+ENDDEF
+
+DEFOP(SIPUSH)
+    var byte1 = OPPOP();
+    var byte2 = OPPOP();
+    OPPUSH((byte1 << 8) | byte2);
+ENDDEF
+
+DEFOP(SWAP)
+    var value1 = OPPOP();
+    var value2 = OPPOP();
+    OPPUSH(value2); OPPUSH(value1);
+ENDDEF
+
+DEFOP(TABLESWITCH)
+    var shift = PC % 4;
+    var instrPC = PC - 1
+    if (shift != 0){
+        switch(shift){
+            case 1:
+            READ_NEXT();
+            case 2:
+            READ_NEXT();
+            case 3:
+            READ_NEXT();
+        }
+    }
+    var stack_key = OPPOP();
+    
+    var defaultbyte1 = READ_NEXT();
+    var defaultbyte2 = READ_NEXT();
+    var defaultbyte3 = READ_NEXT();
+    var defaultbyte4 = READ_NEXT();
+    var defaultbyte = QWORD(defaultbyte1,defaultbyte2,defaultbyte3,defaultbyte4);
+    
+    var low1 = READ_NEXT();
+    var low2 = READ_NEXT();
+    var low3 = READ_NEXT();
+    var low4 = READ_NEXT();
+    var low= QWORD(low1,low2,low3,low4);
+    
+    var high1 = READ_NEXT();
+    var high2 = READ_NEXT();
+    var high3 = READ_NEXT();
+    var high4 = READ_NEXT();
+    var high= QWORD(high1,high2,high3,high4);
+    
+
+    var index = OPPOP();
+    var jmp = defaultbyte;
+
+        
+
+    if (index < low || index > high){
+        var length = high - low + 2;    
+        for(var i=0; i<length; i++){
+            var jump1 = READ_NEXT();
+            var jump2 = READ_NEXT();
+            var jump3 = READ_NEXT();
+            var jump4 = READ_NEXT();
+            var jump = QWORD(jump1,jump2,jump3,jump4);
+            
+            if (index-low == i){
+                jmp = jump;
+            }
+        }
+    }
+    PC = instrPC + jmp;
+ENDDEF
+
+DEFOP(WIDE)
+    var op = READ_NEXT();
+    var indexbyte1 = READ_NEXT();
+    var indexbyte2 = READ_NEXT();
+    switch(op){
+        case ILOAD:
+        case ALOAD:
+        case LLOAD:
+            OPPUSH(LOCAL_VAR((indexbyte1 << 8) | indexbyte2));
+            break;
+        case FLOAD:
+        case DLOAD:
+            OPPUSHD(LOCAL_VAR((indexbyte1 << 8) | indexbyte2));
+            break;
+        case ISTORE:
+        case ASTORE:
+        case LSTORE:
+            LOCAL_VAR((indexbyte1 << 8) | indexbyte2) = OPPOP();
+            break;
+        case FSTORE:
+        case DSTORE:
+            LOCAL_VAR((indexbyte1 << 8) | indexbyte2) = OPPOPD();
+            break;
+    }
+ENDDEF

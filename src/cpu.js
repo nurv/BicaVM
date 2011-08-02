@@ -100,6 +100,6 @@ function interpret(frame){
         var temp = null; 
 #endif
     switch(OPCODE){
-#include "intrp.def"        
+#include "intrp.def"
     }
 }
