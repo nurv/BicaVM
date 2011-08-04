@@ -32,8 +32,8 @@
 #define OPPOP() operand_stack.pop()
 #define OPPUSH(v) operand_stack.push(v)
 
-#define OPPOPD() operand_stack.pop() && operand_stack.pop()
-#define OPPUSHD(v) operand_stack.push(v) && operand_stack.push(null)
+#define OPPOPD() (operand_stack.pop() || operand_stack.pop())
+#define OPPUSHD(v) (operand_stack.push(v) && operand_stack.push(null))
 
 #define OPSTACK(v) operand_stack[v]
 #define OPSTACK_LENGTH() operand_stack.length

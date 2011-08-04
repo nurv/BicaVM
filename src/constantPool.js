@@ -10,6 +10,7 @@
  */
 
 #include "constantPool.jsh"
+#include "cpu.jsh"
 
 /** @constructor */
 var constUtf8 = function(){
@@ -52,7 +53,7 @@ var constInt = function(){
     this.value = null;
     this.id = CONSTANT_Integer;
     this.read = function ( dStream ){
-        this.value = dStream.getU4();
+        this.value = dStream.getInt32();
     }
 };
 
@@ -61,7 +62,7 @@ var constFloat = function(){
     this.value = null;
     this.id = CONSTANT_Float;
     this.read = function ( dStream ){
-        this.value = dStream.getU4();
+        this.value = dStream.getFloat32();
     }
 };
 
@@ -71,8 +72,7 @@ var constLong = function(){
     this.low = null;
     this.id = CONSTANT_Long;
     this.read = function (dStream){
-        this.high = dStream.getU4();
-        this.low = dStream.getU4();
+        this.value = dStream.getInt64();
     }
 };
 
@@ -82,8 +82,32 @@ var constDouble = function(){
     this.low = null;
     this.id = CONSTANT_Double;
     this.read = function (dStream){
-        this.high = dStream.getU4();
-        this.low = dStream.getU4();
+        // var high_bytes = dStream.getU4();
+        // var low_bytes = dStream.getU4();
+        // var bits = (high_bytes * Math.pow(2,32)) + low_bytes;
+        // if (bits == 0x7ff0000000000000){
+        //     this.value = POSITIVE_INF;
+        // }else if (bits == 0xfff0000000000000){
+        //     this.value = NEGATIVE_INF
+        // }else if ((0x7ff0000000000001 < bits && bits < 0x7fffffffffffffff) || (0xfff0000000000001 < bits && bits < 0xffffffffffffffff)){
+        //     this.value = NaN;
+        // }else{
+        //     var s = ((high_bytes >> 31) == 0) ? 1 : -1;
+        //     var e = ((high_bytes >> 20) & 0x7ff);
+        //     var m = 1
+        //     /*
+        //     (e == 0) ?
+        //              (bits & 0xfffffffffffff) * 2 :
+        //              (bits & 0xfffffffffffff) | 0x10000000000000;*/
+        //     var string = (((high_bytes & 0xfffff) * Math.pow(2,32)) + low_bytes).toString(2);
+        //     for (var i=0; i<string.length; i++){
+        //         if (string[i] == "1"){
+        //             m+=Math.pow(2,-(52-i))
+        //         }
+        //     }
+        //     this.value = s * (1+m) * Math.pow(2, e - 1023);
+        //}
+        this.value = dStream.getFloat64();
     }
 };
 
@@ -317,5 +341,5 @@ ConstantPool.prototype.loadFromStream = function(dStream){
 }
 
 ConstantPool.prototype.get = function (i){
-    return this.constantPool[i];
+    return this.constantPool[(i-1)];
 }

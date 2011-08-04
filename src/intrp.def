@@ -288,7 +288,7 @@ DEFALIAS(DSTORE_1)
 DEFALIAS(DSTORE_2)
 DEFALIAS(DSTORE_3)
 DEFNOP()
-    var index = OPCODE - DLOAD_0;
+    var index = OPCODE - DSTORE_0;
     var value = OPPOPD();
     LOCAL_VAR(index) = value;
 ENDDEF
@@ -932,10 +932,11 @@ DEFOP(INVOKEVIRTUAL)
 
    var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
    for(var i=0; i<method.descriptor.args.length; i++){
+       
        args.push(OPPOP());
    }
    
-   PANIC("NOT IMPLEMENTED YET");
+   method.invoke([])
 ENDDEF
 
 DEFOP(IOR)
@@ -1157,10 +1158,10 @@ DEFOP(LDC_W)
 ENDDEF
 
 DEFOP(LDC2_W)
-    var index1 = READ_NEXT();
-    var index2 = READ_NEXT();
+    var indexbyte1 = READ_NEXT();
+    var indexbyte2 = READ_NEXT();
     var index = (indexbyte1 << 8) | indexbyte2
-    var cstt = this_method_class.constantPool.get(index);
+    var cstt = xl.constantPool.get(index);
     OPPUSHD(cstt.value);
 ENDDEF
 

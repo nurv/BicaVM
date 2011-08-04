@@ -100,17 +100,18 @@ function interpret(frame,code,method,xl){
     var pc = 0;
 
 #ifdef DEBUG_INTRP
-        var temp = null; 
+    var temp = null; 
 #endif
+    
     while(pc < code.length){
-    opcode = READ_NEXT();
-    switch(OPCODE){
+        opcode = READ_NEXT();
+        switch(OPCODE){
 #include "intrp.def"
-    default:
-        PANIC("Invalid OPCODE " + opcode);
-    }
+        default:
+            PANIC("Invalid OPCODE " + opcode);
+        }
 #ifdef DEBUG_INTRP
-    temp = null;
+        temp = null;
 #endif
     }
     PANIC("PC overran CODE");
