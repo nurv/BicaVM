@@ -4,7 +4,20 @@
     <script>
       write = function(msg){
       var l = document.getElementById("log");
+      var match;
+		if ((match = msg.match(/(\d+): (\w+) (op:\[[^\]]*]) (.*)/))){
+			var space3 = "";
+			for(var i=0; i<3-(match[1].length); i++){space3 += " " }
+			var space1 = "";
+			for(var i=0; i<23-(match[1].length + space3.length + match[2].length);i++ ){space1 += " " }
+			var space2 = "";
+			for(var i=0; i<30-(match[3].length); i++ ){space2 += " " }
+			msg = "<span style='color:DarkOrchid '>" + match[1] + "</span>:"+ space3 +"<a style='color:red;' href='http://homepages.inf.ed.ac.uk/kwxm/JVM/" + match[2].toLowerCase().replace(/\d+/,"n") + ".html'>" + match[2] + "</a>" + space1 + htmlentities(match[3]) + space2 +" "+ htmlentities(match[4]) ;
+		}else{
+			msg=htmlentities(msg);
+		}
       l.innerHTML = l.innerHTML + msg + "\n";
+
       }
     </script>
     <script src="jvm.js" type="text/javascript"></script>

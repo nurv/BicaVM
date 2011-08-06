@@ -72,7 +72,9 @@ var constLong = function(){
     this.low = null;
     this.id = CONSTANT_Long;
     this.read = function (dStream){
-        this.value = dStream.getInt64();
+        var high = dStream.getU4();
+        var low = dStream.getU4();
+        this.value = math.Long.fromBits(low,high)
     }
 };
 
@@ -124,6 +126,7 @@ var constClass = function(){
             throw "Class name index doesn't point to Utf8 in the Constant Pool";
         }
         this.name_ref = ref;
+        this.jvmClassName = canonicalName(this.name_ref);
     }
 };
 

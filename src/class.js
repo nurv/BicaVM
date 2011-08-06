@@ -267,6 +267,10 @@ ClassDefinition.prototype.calculateEffectiveMembers = function(){
     return [this.effectiveFields,this.effectiveMethods];       
 }
 
+function instanceToString(){
+    return "<" + this["class"].className + ">";
+}
+
 ClassDefinition.prototype.makeInstance = function(){
     if (!this.inited) { this.initializeClass(); }
     var newInstance = {};
@@ -276,6 +280,7 @@ ClassDefinition.prototype.makeInstance = function(){
         }
     }
     newInstance["class"] = this;
+    newInstance["toString"] = instanceToString;
     return newInstance;
 }
 

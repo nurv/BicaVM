@@ -52,7 +52,11 @@ var MethodInfo = function(dStream, constantPool){
         for (var i=0; i<this.attributes_count; i++){
             var attr = this.attributes[i];
             if (attr.id == ATTR_CODE){
-                interpret(frame,attr.code,this,xl);
+                var result = interpret(frame,attr.code,this,xl);
+#ifdef DEBUG_INTRP
+        LOG("Returing from " + this.name_ref.str + this.descriptor_ref.str)
+#endif
+                return result;
             }
         }
     }

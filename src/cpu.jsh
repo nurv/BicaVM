@@ -13,6 +13,16 @@
 
 #include "log.jsh"
 
+#define T_BOOLEAN 4
+#define T_CHAR	  5
+#define T_FLOAT	  6
+#define T_DOUBLE  7
+#define T_BYTE	  8
+#define T_SHORT	  9
+#define T_INT	  10
+#define T_LONG	  11
+
+
 #define JVM_THROWS_NEW(exception) throw "VER: throws new exception"
 #ifdef DEBUG_INTRP
 #define LOG_INTRP(x) LOG(x)
@@ -36,6 +46,7 @@
 #define OPPUSHD(v) (operand_stack.push(v) && operand_stack.push(null))
 
 #define OPSTACK(v) operand_stack[v]
+#define OPSTACK_MULTIPOP(x) operand_stack.splice(x)
 #define OPSTACK_LENGTH() operand_stack.length
 
 #define LOCAL_VAR(v) local_variables[v]

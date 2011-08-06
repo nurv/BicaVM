@@ -42,7 +42,7 @@ DEFOP(ACONST_NULL)
 ENDDEF
 
 DEFOP(ALOAD)
-    var i = OPPOP();
+    var i = READ_NEXT();
     OPPUSH(LOCAL_VAR(i))
 ENDDEF
     
@@ -61,8 +61,8 @@ DEFOP(ANEWARRAY)
     if (count < 0){
         JVM_THROWS_NEW(java.lang.NegativeArraySizeException);
     }
-    var clRef = frame.classRef.constantPool.get((indexbyte1 << 8) | indexbyte2);
-    var instance = {length:count, dimensions:1, value:[], 'class':xl.jvm.classForName(clRef)};
+    var clRef = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
+    var instance = make1DNativeArray(count,false,xl.jvm.classForName(clRef));
     OPPUSH(instance);
 ENDDEF
 
@@ -516,9 +516,9 @@ DEFOP(GETFIELD)
     var objectref = OPPOP();
     
     CHECK_NULL(objectref)
-    var field = objectref["class"].constantPool[(indexbyte1 << 8) | indexbyte2];
+    var field = objectref["class"].constantPool.get((indexbyte1 << 8) | indexbyte2);
     //check if static
-    OPPUSH(objectref[canonicalName(field.class_ref.name_ref.str) + " " + field.name_and_type_ref.name_ref.str]);
+    OPPUSH(objectref[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str]);
 ENDDEF
 
 DEFOP(GETSTATIC)
@@ -526,11 +526,11 @@ DEFOP(GETSTATIC)
     var indexbyte2 = READ_NEXT();
     
     CHECK_NULL(objectref)
-    var field = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
+    var field = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
     var aClass = field.class_ref.name_ref.str;
     
     //check if static
-    OPPUSH(jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref.str) + " " + field.name_and_type_ref.name_ref.str]);
+    OPPUSH(jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str]);
 ENDDEF
 
 DEFOP(GOTO)
@@ -612,10 +612,10 @@ DEFOP(IAND)
 ENDDEF
 
 DEFOP(IASTORE)
+    var value = OPPOP();
     var index = OPPOP();
     var arrayref = OPPOP();
-    var value = OPPOP();
-    
+
     CHECK_NULL(arrayref);
     CHECK_ARRAY_INDEX(index,arrayref);
 
@@ -869,7 +869,7 @@ DEFOP(INSTANCEOF)
         OPPUSH(0); 
         break; 
     }
-    var className = canonicalName(this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2].name_ref.str);
+    var className = canonicalName(xl.constantPool.get((indexbyte1 << 8) | indexbyte2).name_ref);
 
     if(objectref["class"].isAssignable(jvm.classForName(className))){
         OPPUSH(1);
@@ -889,7 +889,7 @@ DEFOP(INVOKEINTERFACE)
    /* expected 0*/ READ_NEXT();
    var args = [];
 
-   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
+   var method = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
    for(var i=0; i<method.descriptor.args.length; i++){
        args.push(OPPOP());
    }
@@ -901,15 +901,21 @@ ENDDEF
 DEFOP(INVOKESPECIAL)
    var indexbyte1 = READ_NEXT();
    var indexbyte2 = READ_NEXT();
-   var args = [];
 
-   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
-   for(var i=0; i<method.descriptor.args.length; i++){
-       args.push(OPPOP());
+   var methodDesrc = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
+   var cl = xl.jvm.classForName(methodDesrc.class_ref.jvmClassName);
+   var methodId = "method " + methodDesrc.name_and_type_ref.name_ref.str +  methodDesrc.name_and_type_ref.descriptor_ref.str
+   var method = cl[methodId];
+   var args = OPSTACK_MULTIPOP(OPSTACK_LENGTH() - method.descriptor.args.length-1);
+   var result;
+   if(method.access_flags & ACC_NATIVE){
+       PANIC("INVOKESPECIAL NATIVE CALL")
+   }else{
+       result = method.invoke(args,cl);
    }
-   
-   var objectref = OPPOP();
-   PANIC("NOT IMPLEMENTED YET");
+   if (result != undefined){
+       OPPUSH(result.return_object);
+   }
 ENDDEF
 
 DEFOP(INVOKESTATIC)
@@ -917,7 +923,7 @@ DEFOP(INVOKESTATIC)
    var indexbyte2 = READ_NEXT();
    var args = [];
 
-   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
+   var method = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
    for(var i=0; i<method.descriptor.args.length; i++){
        args.push(OPPOP());
    }
@@ -930,13 +936,20 @@ DEFOP(INVOKEVIRTUAL)
    var indexbyte2 = READ_NEXT();
    var args = [];
 
-   var method = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
-   for(var i=0; i<method.descriptor.args.length; i++){
-       
-       args.push(OPPOP());
+   var methodDesrc = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
+   var cl = xl.jvm.classForName(methodDesrc.class_ref.jvmClassName);
+   var methodId = "method " + methodDesrc.name_and_type_ref.name_ref.str +  methodDesrc.name_and_type_ref.descriptor_ref.str
+   var method = cl[methodId];
+   var args = OPSTACK_MULTIPOP(OPSTACK_LENGTH() - method.descriptor.args.length);
+   var result;
+   if(method.access_flags & ACC_NATIVE){
+       PANIC("INVOKEVIRTUAL NATIVE CALL")
+   }else{
+       result = method.invoke(args,cl);
    }
-   
-   method.invoke([])
+   if (result != undefined){
+       OPPUSH(result.return_object);
+   }
 ENDDEF
 
 DEFOP(IOR)
@@ -1122,14 +1135,14 @@ ENDDEF
 
 DEFOP(LDC)
     var index = READ_NEXT();
-    var cstt = this_method_class.constantPool.get(index);
+    var cstt = xl.constantPool.get(index);
     switch(cstt.id){
         case CONSTANT_Integer:
         case CONSTANT_Float:
             OPPUSH(cstt.value);
             break;
         case CONSTANT_String:
-            PANIC("NEW STRING FROM CONSTANT POOL NOT IMPLEMENTED");
+            OPPUSH(xl.jvm.makeInstanceOfStringFromJSSTring(cstt.string_ref.str));
             break;
         default:
             PANIC("What now?");        
@@ -1141,7 +1154,7 @@ DEFOP(LDC_W)
     var index1 = READ_NEXT();
     var index2 = READ_NEXT();
     var index = (indexbyte1 << 8) | indexbyte2
-    var cstt = this_method_class.constantPool.get(index);
+    var cstt = xl.constantPool.get(index);
     switch(cstt.id){
         case CONSTANT_Integer:
             OPPUSHD(cstt.value);
@@ -1360,7 +1373,7 @@ DEFOP(MULTIANEWARRAY)
     for(var i=0; i<dimensions; i++){
         counts.add(OPPOP());
     }
-    var clRef = frame.classRef.constantPool.get((indexbyte1 << 8) | indexbyte2);
+    var clRef = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
     var instance = {length:counts, dimensions:dimensions, value:[], 'class':xl.jvm.classForName(clRef)};
     OPPUSH(instance);
 ENDDEF
@@ -1369,12 +1382,23 @@ DEFOP(NEW)
     var indexbyte1 = READ_NEXT();
     var indexbyte2 = READ_NEXT();
     
-    var clRef = frame.classRef.constantPool.get((indexbyte1 << 8) | indexbyte2);
-    var newInstance = xl.jvm.classForName(clRef).makeInstance();
+    var clRef = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
+    var newInstance = xl.jvm.classForName(clRef.jvmClassName).makeInstance();
     OPPUSH(newInstance);
 ENDDEF
 
 DEFOP(NOP)
+ENDDEF
+
+DEFOP(NEWARRAY)
+    var atype = READ_NEXT();
+    var count = OPPOP();
+    if (count < 0){
+        JVM_THROWS_NEW(java.lang.NegativeArraySizeException);
+    }
+    var clRef = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
+    var instance = make1DNativeArray(count,true,atype);
+    OPPUSH(instance);
 ENDDEF
 
 DEFOP(POP)
@@ -1393,9 +1417,9 @@ DEFOP(PUTFIELD)
     var objectref = OPPOP();
     
     CHECK_NULL(objectref)
-    var field = objectref["class"].constantPool[(indexbyte1 << 8) | indexbyte2];
+    var field = objectref["class"].constantPool.get((indexbyte1 << 8) | indexbyte2);
     //check if static
-    objectref[canonicalName(field.class_ref.name_ref.str) + " " + field.name_and_type_ref.name_ref.str] = value;
+    objectref[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str] = value;
 ENDDEF
 
 DEFOP(GETSTATIC)
@@ -1404,11 +1428,11 @@ DEFOP(GETSTATIC)
     var value = OPPOP();
     
     CHECK_NULL(objectref)
-    var field = this_method_class.constantPool[(indexbyte1 << 8) | indexbyte2];
+    var field = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
     var aClass = field.class_ref.name_ref.str;
     
     //check if static
-    jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref.str) + " " + field.name_and_type_ref.name_ref.str] = value;
+    jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str] = value;
 ENDDEF
 
 DEFOP(RET)

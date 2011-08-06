@@ -22,6 +22,28 @@ var JVM = function(params,args){
     this.method_area = {};
     this.level = 0;
     this.classpath = params.classes_to_load;
+    for (var i=0; i<this.args; i++){
+        if (typeof this.args[i] != "string"){
+            throw "Argument " + i + " is not a string.";;
+        }
+    }
+    this.stringHashCode = function(string){
+    	var hash = 0;
+    	if (string.length == 0) return hash;
+    	for (i = 0; i < string.length; i++) {
+    		Char = string.charCodeAt(i);
+    		hash = ((hash<<5)-hash)+Char;
+    		hash = hash & hash; // Convert to 32bit integer
+    	}
+    	return hash;
+    }
+    
+    this.makeInstanceOfStringFromJSSTring = function(string){
+        var inst = this.java_lang_string.makeInstance();
+        inst["java/lang/String value"] = string;
+        inst["java/lang/String hash"] = this.stringHashCode(string)
+        return inst;
+    }
 
     this.classForName = function (name){
         if (!name) { PANIC("undefined className")}
@@ -72,7 +94,11 @@ var JVM = function(params,args){
         if (method == null){
             PANIC(this.args[0] + " doesn't have a a main method");
         }
-        method.invoke(null,this.main_class);
+        var array = make1DNativeArray(this.args.length,false,this.java_lang_string);
+        for (var i=0; i<this.args.length; i++){
+            array.value[i] = this.makeInstanceOfStringFromJSSTring(this.args[i]);                
+        }
+        method.invoke([array],this.main_class);
     };
 };
 /** @constructor */
