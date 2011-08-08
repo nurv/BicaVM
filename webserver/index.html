@@ -2,9 +2,13 @@
   <head>
     <title>JS JVM</title>
     <script>
+		var lident = -1;
       write = function(msg){
       var l = document.getElementById("log");
       var match;
+		if (msg.match(/Calling/)){
+			lident++;
+		}
 		if ((match = msg.match(/(\d+): (\w+) (op:\[[^\]]*]) (.*)/))){
 			var space3 = "";
 			for(var i=0; i<3-(match[1].length); i++){space3 += " " }
@@ -16,7 +20,15 @@
 		}else{
 			msg=htmlentities(msg);
 		}
-      l.innerHTML = l.innerHTML + msg + "\n";
+		if (msg.match(/!! NATIVE !!/)){
+			msg = "<span style='color:green'>" + msg + "</span>"
+		}
+		var spac = ""
+		for (var i =0; i<lident; i++){ spac += "    ";}
+		if (msg.match(/Returing/)){
+			lident--;
+		}
+      l.innerHTML = l.innerHTML + spac + msg + "\n";
 
       }
     </script>

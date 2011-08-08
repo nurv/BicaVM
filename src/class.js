@@ -22,7 +22,7 @@ function slurpFile (filename, fa) {
     } else if ('responseType' in xmlHttpRequest) {
         xmlHttpRequest.responseType = 'arraybuffer';
     } else {
-        xmlHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
+        //xmlHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
     }
     xmlHttpRequest.send(null);
     if (xmlHttpRequest.status != 200 && xmlHttpRequest.status != 0) {
@@ -42,6 +42,11 @@ function slurpFile (filename, fa) {
     if (bf) {
         result = [response.byteLength, response];
     } else {
+        var a = "";
+        for(var k in xmlHttpRequest){
+            a+=k+",";
+        }
+        alert(a)
         throw "No typed arrays";
     }
     return result;

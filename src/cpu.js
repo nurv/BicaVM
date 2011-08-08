@@ -16,7 +16,9 @@
 
 /** @constructor */
 var JVM = function(params,args){
-    this.nativeMappingTable = {}
+    this.JNITable = params.JNITable || {}
+    this.internalJNITable = 
+#include "internalJNI.jsh"
     this.params = params;
     this.args = args; 
     this.method_area = {};
@@ -40,7 +42,10 @@ var JVM = function(params,args){
     
     this.makeInstanceOfStringFromJSSTring = function(string){
         var inst = this.java_lang_string.makeInstance();
-        inst["java/lang/String value"] = string;
+        inst["java/lang/String count"] = string.length;
+        var x = make1DNativeArray(string.length,true,T_CHAR);
+        x.value = string.toArray();
+        inst["java/lang/String value"] = x;
         inst["java/lang/String hash"] = this.stringHashCode(string)
         return inst;
     }
@@ -56,7 +61,7 @@ var JVM = function(params,args){
             
             LOG("[Loaded " + name  + "]");
         }
-        
+        loaded_class.initializeClass();
         return loaded_class;
         
     }

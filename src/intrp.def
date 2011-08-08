@@ -73,6 +73,9 @@ ENDDEF
 
 DEFOP(ARRAYLENGTH)
     var arrayref = OPPOP();
+    if (!(arrayref.primitive == true || arrayref.primitive == false)){
+        PANIC("NOT AN ARRAY");
+    }
     OPPUSH(arrayref.length);
 ENDDEF
 
@@ -516,9 +519,10 @@ DEFOP(GETFIELD)
     var objectref = OPPOP();
     
     CHECK_NULL(objectref)
-    var field = objectref["class"].constantPool.get((indexbyte1 << 8) | indexbyte2);
+    var field = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
     //check if static
-    OPPUSH(objectref[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str]);
+    OPPUSH(objectref[field.class_ref.name_ref.str + " " + field.name_and_type_ref.name_ref.str]);
+    LOG(field.class_ref.name_ref.str + " " + field.name_and_type_ref.name_ref.str);
 ENDDEF
 
 DEFOP(GETSTATIC)
@@ -538,7 +542,7 @@ DEFOP(GOTO)
     var branchbyte2 = READ_NEXT();
     
     var branchoffset = (branchbyte1 << 8) | branchbyte2;
-    PC = PC + branchoffset;
+    PC = PC + branchoffset - 3;
 ENDDEF
 
 DEFOP(GOTO_W)
@@ -548,7 +552,7 @@ DEFOP(GOTO_W)
     var branchbyte4 = READ_NEXT();
     
     var branchoffset = (branchbyte1 << 24) | (branchbyte2 << 16) | (branchbyte3 << 8) | branchbyte4;
-    PC = PC + branchoffset;
+    PC = PC + branchoffset - 5;
 ENDDEF
 
 DEFOP(I2B)
@@ -651,7 +655,7 @@ DEFOP(IF_ACMPEQ)
     var value2 = OPPOP();
     if (value1 == value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -662,7 +666,7 @@ DEFOP(IF_ACMPNE)
     var value2 = OPPOP();
     if (value1 != value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -673,7 +677,7 @@ DEFOP(IF_ICMPEQ)
     var value2 = OPPOP();
     if (value1 == value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -684,51 +688,51 @@ DEFOP(IF_ICMPNE)
     var value2 = OPPOP();
     if (value1 != value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
 DEFOP(IF_ICMPLT)
     var branchbyte1 = READ_NEXT();
     var branchbyte2 = READ_NEXT();
-    var value1 = OPPOP();
     var value2 = OPPOP();
+    var value1 = OPPOP();
     if (value1 < value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
 DEFOP(IF_ICMPLE)
     var branchbyte1 = READ_NEXT();
     var branchbyte2 = READ_NEXT();
-    var value1 = OPPOP();
     var value2 = OPPOP();
+    var value1 = OPPOP();
     if (value1 <= value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
 DEFOP(IF_ICMPGT)
     var branchbyte1 = READ_NEXT();
     var branchbyte2 = READ_NEXT();
-    var value1 = OPPOP();
     var value2 = OPPOP();
+    var value1 = OPPOP();
     if (value1 > value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
 DEFOP(IF_ICMPGE)
     var branchbyte1 = READ_NEXT();
     var branchbyte2 = READ_NEXT();
-    var value1 = OPPOP();
     var value2 = OPPOP();
+    var value1 = OPPOP();
     if (value1 >= value2){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -739,7 +743,7 @@ DEFOP(IFEQ)
 
     if (value == 0){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -750,7 +754,7 @@ DEFOP(IFNE)
 
     if (value != 0){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -761,7 +765,7 @@ DEFOP(IFLT)
 
     if (value < 0){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -772,7 +776,7 @@ DEFOP(IFLE)
 
     if (value <= 0){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -783,7 +787,7 @@ DEFOP(IFGT)
 
     if (value > 0){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -794,7 +798,7 @@ DEFOP(IFGE)
 
     if (value >= 0){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -805,7 +809,7 @@ DEFOP(IFNONNULL)
 
     if (value != NULL){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -816,7 +820,7 @@ DEFOP(IFNULL)
 
     if (value != NULL){
         var branchoffset = (branchbyte1 << 8) | branchbyte2;
-        PC = PC + branchoffset;
+        PC = PC + branchoffset - 3;
     }
 ENDDEF
 
@@ -836,7 +840,7 @@ DEFALIAS(ILOAD_1)
 DEFALIAS(ILOAD_2)
 DEFALIAS(ILOAD_3)
 DEFNOP()
-    OPPUSH(OPCODE - ILOAD_0);
+    OPPUSH(LOCAL_VAR(OPCODE - ILOAD_0));
 ENDDEF
 
 DEFOP(IMUL)
@@ -923,12 +927,31 @@ DEFOP(INVOKESTATIC)
    var indexbyte2 = READ_NEXT();
    var args = [];
 
-   var method = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
-   for(var i=0; i<method.descriptor.args.length; i++){
-       args.push(OPPOP());
+   var methodDesrc = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
+   var cl = xl.jvm.classForName(methodDesrc.class_ref.jvmClassName);
+   var methodId = "method " + methodDesrc.name_and_type_ref.name_ref.str +  methodDesrc.name_and_type_ref.descriptor_ref.str
+   var method = cl[methodId];
+   var args = OPSTACK_MULTIPOP(OPSTACK_LENGTH() - method.descriptor.args.length);
+   var result;
+   if(method.access_flags & ACC_NATIVE){
+       LOG("Calling " + xl.className+ " " + method.name_ref.str + method.descriptor_ref.str)
+       LOG("!! NATIVE !!")
+       if (methodId in xl.jvm.internalJNITable[canonicalName(cl.this_class.name_ref)]){
+
+           result = xl.jvm.internalJNITable[canonicalName(cl.this_class.name_ref)][methodId].apply(cl,args);
+           LOG("Returing from " + xl.className+ " " + method.name_ref.str + method.descriptor_ref.str)
+       }else if (methodId in xl.jvm.JNITable[canonicalName(cl.this_class.name_ref)][methodId]){
+           result = xl.jvm.JNITable[canonicalName(cl.this_class.name_ref)][methodId].apply(cl,args)
+       }else{
+           PANIC(methodId + " declared as native but not mapped");
+       }
+        LOG("Returing from " + xl.className+ " " + method.name_ref.str + method.descriptor_ref.str)
+   }else{
+       result = method.invoke(args,cl);
    }
-   
-   PANIC("NOT IMPLEMENTED YET");
+   if (result != undefined){
+       OPPUSH(result.return_object);
+   }
 ENDDEF
 
 DEFOP(INVOKEVIRTUAL)
@@ -940,7 +963,7 @@ DEFOP(INVOKEVIRTUAL)
    var cl = xl.jvm.classForName(methodDesrc.class_ref.jvmClassName);
    var methodId = "method " + methodDesrc.name_and_type_ref.name_ref.str +  methodDesrc.name_and_type_ref.descriptor_ref.str
    var method = cl[methodId];
-   var args = OPSTACK_MULTIPOP(OPSTACK_LENGTH() - method.descriptor.args.length);
+   var args = OPSTACK_MULTIPOP(OPSTACK_LENGTH() - method.descriptor.args.length - 1);
    var result;
    if(method.access_flags & ACC_NATIVE){
        PANIC("INVOKEVIRTUAL NATIVE CALL")
@@ -1017,10 +1040,10 @@ DEFNOP()
 ENDDEF
 
 DEFOP(ISUB)
-    var value1 = OPPOP();
     var value2 = OPPOP();
+    var value1 = OPPOP();
     var result = value1 - value2;
-    if (IS_UNDERFLOW(result,INT_MAX_VALUE)){
+    if (IS_UNDERFLOW(result,INT_MIN_VALUE)){
         OPPUSH(INT_OVERFLOW(result));
     }else{
         OPPUSH(result);
@@ -1417,9 +1440,9 @@ DEFOP(PUTFIELD)
     var objectref = OPPOP();
     
     CHECK_NULL(objectref)
-    var field = objectref["class"].constantPool.get((indexbyte1 << 8) | indexbyte2);
+    var field = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
     //check if static
-    objectref[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str] = value;
+    objectref[field.class_ref.name_ref.str + " " + field.name_and_type_ref.name_ref.str] = value;
 ENDDEF
 
 DEFOP(GETSTATIC)

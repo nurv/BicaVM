@@ -10,7 +10,15 @@
  */
  
 #include "cpu.jsh"
- 
+
+String.prototype.toArray = function(){
+    var result =[];
+    for(i =0; i < this.length; i++){
+      result.push(this.charCodeAt(i));
+    }
+    return result;
+}
+
 function printNativeArray(){
     var result = "[";
     if(this.primitive){
