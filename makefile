@@ -1,4 +1,4 @@
-
+ 
 SRCS=$(wildcard src/*.js)
 
 OBJS=$(SRCS:.js=.jspp)
