@@ -56,8 +56,9 @@ function parseArgs(descriptor){
 }
 
 /** @constructor */
-var FieldInfo = function(dStream,constantPool){
+var FieldInfo = function(dStream,constantPool,cl){
     this.access_flags = dStream.getU2();
+    this.dec_class = cl;
     this.name_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
     this.descriptor_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
     var type = this.descriptor_ref.str.charAt(0);
@@ -70,8 +71,9 @@ var FieldInfo = function(dStream,constantPool){
 }
 
 /** @constructor */
-var MethodInfo = function(dStream, constantPool){
+var MethodInfo = function(dStream, constantPool,cl){
     this.access_flags = dStream.getU2();
+    this.dec_class = cl;
     this.name_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
     this.descriptor_ref = ConstantPoolRef(dStream.getU2(), constantPool, CONSTANT_Utf8);
     this.descriptor = parseArgs(this.descriptor_ref.str);

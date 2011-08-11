@@ -520,9 +520,12 @@ DEFOP(GETFIELD)
     
     CHECK_NULL(objectref)
     var field = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
-    //check if static
-    OPPUSH(objectref[field.class_ref.name_ref.str + " " + field.name_and_type_ref.name_ref.str]);
-    LOG(field.class_ref.name_ref.str + " " + field.name_and_type_ref.name_ref.str);
+    var fieldSig = field.class_ref.name_ref.str + " " + field.name_and_type_ref.name_ref.str ;
+    if (!(fieldSig in objectref)){
+        fieldSig = xl.resolveField(field.name_and_type_ref.name_ref.str);
+    }
+    OPPUSH(objectref[fieldSig]);
+    LOG(fieldSig);
 ENDDEF
 
 DEFOP(GETSTATIC)
@@ -937,9 +940,7 @@ DEFOP(INVOKESTATIC)
        LOG("Calling " + xl.className+ " " + method.name_ref.str + method.descriptor_ref.str)
        LOG("!! NATIVE !!")
        if (methodId in xl.jvm.internalJNITable[canonicalName(cl.this_class.name_ref)]){
-
            result = xl.jvm.internalJNITable[canonicalName(cl.this_class.name_ref)][methodId].apply(cl,args);
-           LOG("Returing from " + xl.className+ " " + method.name_ref.str + method.descriptor_ref.str)
        }else if (methodId in xl.jvm.JNITable[canonicalName(cl.this_class.name_ref)][methodId]){
            result = xl.jvm.JNITable[canonicalName(cl.this_class.name_ref)][methodId].apply(cl,args)
        }else{

@@ -25,7 +25,7 @@
 
 #define JVM_THROWS_NEW(exception) throw "VER: throws new exception"
 #ifdef DEBUG_INTRP
-#define LOG_INTRP(x) LOG(x)
+#define LOG_INTRP(x) write(x)
 #define DEFALIAS(opx) case opx: if(!temp) { temp = pc + ": opx op:[" + operand_stack + "] lvar:[" + local_variables + "]"; }
 
 #else
@@ -40,8 +40,12 @@
 #define ENDDEF break;
 
 #define OPPOP() operand_stack.pop()
-#define OPPUSH(v) operand_stack.push(v)
 
+#ifdef DEBUG_INTRP
+#define OPPUSH(v) var $unused = v; if (typeof $unused === "undefined") {PANIC("pushing undefined to stack")}; operand_stack.push($unused)
+#else
+#define OPPUSH(v) operand_stack.push(v)
+#endif
 #define OPPOPD() (operand_stack.pop() || operand_stack.pop())
 #define OPPUSHD(v) (operand_stack.push(v) && operand_stack.push(null))
 

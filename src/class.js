@@ -131,13 +131,13 @@ ClassDefinition.prototype.loadFromFile = function (file){
     this.fields = []
     for(var i=0; i<this.fields_count; i++){
         
-        this.fields[i] = new FieldInfo(dataStream,this.constantPool);
+        this.fields[i] = new FieldInfo(dataStream,this.constantPool,this);
     }
 
     this.methods_count = dataStream.getU2();
     this.methods=[];
     for(var i=0; i<this.methods_count; i++){
-        this.methods[i] = new MethodInfo(dataStream, this.constantPool);
+        this.methods[i] = new MethodInfo(dataStream, this.constantPool,this);
     }
 
     this.attributes_count = dataStream.getU2();
@@ -282,6 +282,15 @@ ClassDefinition.prototype.makeInstance = function(){
     newInstance["class"] = this;
     newInstance["toString"] = instanceToString;
     return newInstance;
+}
+
+ClassDefinition.prototype.resolveField = function(name){
+    for(var k in this.effectiveFields){
+        var field = this.effectiveFields[k];
+        if (field.name_ref.str === name && !(field.access_flags & ACC_PRIVATE)){
+            return field.dec_class.this_class.name_ref.str + " " +field.name_ref.str;
+        }
+    }
 }
 
 function LoadClassFile (x,jvm){
