@@ -532,12 +532,11 @@ DEFOP(GETSTATIC)
     var indexbyte1 = READ_NEXT();
     var indexbyte2 = READ_NEXT();
     
-    CHECK_NULL(objectref)
     var field = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
     var aClass = field.class_ref.name_ref.str;
     
     //check if static
-    OPPUSH(jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str]);
+    OPPUSH(xl.jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str]);
 ENDDEF
 
 DEFOP(GOTO)
@@ -1446,7 +1445,7 @@ DEFOP(PUTFIELD)
     objectref[field.class_ref.name_ref.str + " " + field.name_and_type_ref.name_ref.str] = value;
 ENDDEF
 
-DEFOP(GETSTATIC)
+DEFOP(PUTSTATIC)
     var indexbyte1 = READ_NEXT();
     var indexbyte2 = READ_NEXT();
     var value = OPPOP();

@@ -30,7 +30,7 @@ class index:
             return commands.getstatusoutput("cat ../src/*.js | cpp -DDEBUG -DDEBUG_INTRP -I../src/ -P -undef -CC -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers")[1]
         if "testRuntime" in filename:
             alphex = filename[filename.rfind("/") + 1:];
-            return file("../runtime/" + alphex.replace(".","/") + ".class");
+            return file("../runtime/" + alphex.replace(".","/") + ".class").read();
         if filename == "":
             return file("index.html").read()
         try:
