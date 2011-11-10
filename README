@@ -1,1 +1,23 @@
-I don't know yet if this is even possible. but lets say yes.
+BicaVM
+======
+
+This project is an implementation of a JVM in JavaScript. At this
+moment it runs Java Code but is more like a proof of concept than a
+real JVM. Alot of work is required to make this JVM to run java code
+(including writting an entire runtime enviroment).
+
+Installation
+============
+
+1. Checkout the code from github
+2. make - A webserver will start
+3. Point the latest version of chrome to http://0.0.0.0:8080/
+
+What can/can't do at this point
+==========================
+
+BicaVM can interpret a big chunck of JVM's bytecode, probably around
+60%. However is wildy incomplete. It has a JNI interface that maps to
+JavaScript functions. It has no JIT compilation.
+
+
