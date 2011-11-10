@@ -20,4 +20,6 @@ BicaVM can interpret a big chunck of JVM's bytecode, probably around
 60%. However is wildy incomplete. It has a JNI interface that maps to
 JavaScript functions. It has no JIT compilation.
 
-
+Contact
+=======
+bicavm@surf-the-edge.com
