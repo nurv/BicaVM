@@ -62,7 +62,7 @@ DEFOP(ANEWARRAY)
         JVM_THROWS_NEW(java.lang.NegativeArraySizeException);
     }
     var clRef = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
-    var instance = make1DNativeArray(count,false,xl.jvm.classForName(clRef));
+    var instance = make1DNativeArray(count,false,xl.jvm.classForName(clRef.jvmClassName));
     OPPUSH(instance);
 ENDDEF
 
@@ -533,10 +533,10 @@ DEFOP(GETSTATIC)
     var indexbyte2 = READ_NEXT();
     
     var field = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
-    var aClass = field.class_ref.name_ref.str;
+    var aClass = canonicalName(field.class_ref.name_ref);
     
     //check if static
-    OPPUSH(xl.jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str]);
+    OPPUSH(xl.jvm.classForName(aClass)[field.class_ref.name_ref.str + " " + field.name_and_type_ref.name_ref.str]);
 ENDDEF
 
 DEFOP(GOTO)
@@ -938,14 +938,19 @@ DEFOP(INVOKESTATIC)
    if(method.access_flags & ACC_NATIVE){
        LOG("Calling " + xl.className+ " " + method.name_ref.str + method.descriptor_ref.str)
        LOG("!! NATIVE !!")
-       if (methodId in xl.jvm.internalJNITable[canonicalName(cl.this_class.name_ref)]){
-           result = xl.jvm.internalJNITable[canonicalName(cl.this_class.name_ref)][methodId].apply(cl,args);
-       }else if (methodId in xl.jvm.JNITable[canonicalName(cl.this_class.name_ref)][methodId]){
-           result = xl.jvm.JNITable[canonicalName(cl.this_class.name_ref)][methodId].apply(cl,args)
+       var className = canonicalName(cl.this_class.name_ref);
+       if (className in xl.jvm.internalJNITable){
+       if (methodId in xl.jvm.internalJNITable[className]){
+           result = xl.jvm.internalJNITable[className][methodId].apply(cl,args);
+       }else if (methodId in xl.jvm.JNITable[className][methodId]){
+           result = xl.jvm.JNITable[className][methodId].apply(cl,args)
        }else{
            PANIC(methodId + " declared as native but not mapped");
        }
         LOG("Returing from " + xl.className+ " " + method.name_ref.str + method.descriptor_ref.str)
+        }else{
+            PANIC(className + " has no native mappings");
+        }
    }else{
        result = method.invoke(args,cl);
    }

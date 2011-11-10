@@ -12,5 +12,8 @@
  {
      'java.lang.System' : {
          'method arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V' : java_lang_System_arraycopy
+     },
+     'java.lang.Object' : {
+         'method registerNatives()V' : java_lang_Object_registerNatives
      }
  }

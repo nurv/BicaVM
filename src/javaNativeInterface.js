@@ -16,3 +16,8 @@ function java_lang_System_arraycopy(src,srcPos,dest,destPos,length){
         dest.value[destPos + i] = temp[i];
     }
 }
+
+//java.lang.Object registerNatives()V
+function java_lang_Object_registerNatives(){
+    
+}

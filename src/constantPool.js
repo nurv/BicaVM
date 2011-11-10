@@ -322,8 +322,8 @@ ConstantPool.prototype.loadFromStream = function(dStream){
 	alloc.read(dStream);
         this.constantPool[(i-1)] = alloc;
         if (alloc.id == CONSTANT_Long || alloc.id == CONSTANT_Double) {
-	    i++;
-	    this.constantPool[(i-1)] = null;
+	        i++;
+	        this.constantPool[(i-1)] = null;
         }
     }
     for(var i = 1; i < this.constantPoolCount; i++){

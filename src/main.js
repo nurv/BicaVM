@@ -10,6 +10,7 @@
  */
 
 var test_jvm;
+
 function main (args){
     test_jvm = new JVM({},["foo"])
     test_jvm.run();

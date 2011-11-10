@@ -229,9 +229,12 @@ ClassDefinition.prototype.initializeClass = function(){
             this[this.this_class.name_ref.str + " " + f.name_ref.str] = (f.primitive)?0:null;
         }
     }
-    
-    // call <cinit>
     this.inited = true;
+    // call <cinit>
+    // Y U NO WORK 4 java.io.Number ?????????
+//    if (!(this.access_flags & ACC_INTERFACE)){
+//        this["method <clinit>()V"].invoke([],this)
+//    }
 }
 
 ClassDefinition.prototype.calculateEffectiveMembers = function(){

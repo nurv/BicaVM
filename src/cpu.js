@@ -61,7 +61,9 @@ var JVM = function(params,args){
             
             LOG("[Loaded " + name  + "]");
         }
-        loaded_class.initializeClass();
+        if(!loaded_class.inited){
+            loaded_class.initializeClass();
+        }
         return loaded_class;
         
     }

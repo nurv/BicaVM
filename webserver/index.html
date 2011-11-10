@@ -31,7 +31,11 @@
       l.innerHTML = l.innerHTML + spac + msg + "\n";
 
       }
-
+	function panic(msg){
+		var l = document.getElementById("log");
+		msg = "<div style='background:red; color:white; padding:5px; margin-top:5px;'>" + msg + "</div>";
+		l.innerHTML = l.innerHTML + msg;
+	}
 	function include(filename)
 	{
 	   document.write('<script type="text/javascript" src="' + filename + 
