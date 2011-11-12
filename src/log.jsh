@@ -13,7 +13,7 @@
 
 
 function htmlentities(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return String(str).replace(new RegExp("&","g"), '&amp;').replace(new RegExp("<","g"), '&lt;').replace(new RegExp(">","g"), '&gt;').replace(new RegExp("\"","g"), '&quot;');
 }
 
 #define LOG(msg) write(msg);\
