@@ -13,16 +13,16 @@
 #define _TYPES_JSH_
 
 // Local Variables Types
-#define LOC_VAR_boolean       0x001;
-#define LOC_VAR_byte          0x002;
-#define LOC_VAR_char          0x004;
-#define LOC_VAR_short         0x008;
-#define LOC_VAR_int           0x010;
-#define LOC_VAR_float         0x020;
-#define LOC_VAR_reference     0x040;
-#define LOC_VAR_returnAddress 0x080;
-#define LOC_VAR_long          0x100;
-#define LOC_VAR_double        0x200;
+#define T_boolean       0x001
+#define T_byte          0x002
+#define T_char          0x004
+#define T_short         0x008
+#define T_int           0x010
+#define T_float         0x020
+#define T_reference     0x040
+#define T_returnAddress 0x080
+#define T_long          0x100
+#define T_double        0x200
 
 // Reference Types
 #define REF_TYPE_class     0x1

@@ -231,10 +231,10 @@ ClassDefinition.prototype.initializeClass = function(){
     }
     this.inited = true;
     // call <cinit>
-    // Y U NO WORK 4 java.io.Number ?????????
-//    if (!(this.access_flags & ACC_INTERFACE)){
-//        this["method <clinit>()V"].invoke([],this)
-//    }
+    // Y U NO WORK 4 java.lang.Number ?????????
+    if (this["method <clinit>()V"]){
+        this["method <clinit>()V"].invoke([],this)
+    }
 }
 
 ClassDefinition.prototype.calculateEffectiveMembers = function(){
@@ -255,13 +255,17 @@ ClassDefinition.prototype.calculateEffectiveMembers = function(){
         // methods
         this.effectiveMethods = {}
         for(var k in superEffective[1]){
+
             this.effectiveMethods[k] = superEffective[1][k];
             this[k] = superEffective[1][k];
         }
         
         for(var i=0; i<this.methods_count; i++){
             var method = this.methods[i]
-            this.effectiveMethods["method " + method.name_ref.str + method.descriptor_ref.str] = method;
+            if (!(method.name_ref.str + method.descriptor_ref.str === "<clinit>()V")){
+                this.effectiveMethods["method " + method.name_ref.str + method.descriptor_ref.str] = method;
+            }
+            
             this["method " + method.name_ref.str + method.descriptor_ref.str] = method;
         }
 
