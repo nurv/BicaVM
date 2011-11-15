@@ -21,3 +21,17 @@ function java_lang_System_arraycopy(src,srcPos,dest,destPos,length){
 function java_lang_Object_registerNatives(){
     
 }
+
+//java.lang.System registerNatives()V
+function java_lang_System_registerNatives(){
+    
+}
+
+//java.lang.System currentTimeMillis()J
+function java_lang_System_currentTimeMillis(){
+	return math.Long.fromInt(new Date().getTime());
+}
+//java.lang.Class getPrimitiveClass(Ljava/lang/String;)Ljava/lang/Class;
+function java_lang_Class_getPrimitiveClass (type) {
+	return this.jvm['primitive_' + javaString2JS(type)];
+}

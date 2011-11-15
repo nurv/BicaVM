@@ -936,26 +936,22 @@ DEFOP(INVOKESTATIC)
    var args = OPSTACK_MULTIPOP(OPSTACK_LENGTH() - method.descriptor.args.length);
    var result;
    if(method.access_flags & ACC_NATIVE){
-       LOG("Calling " + xl.className+ " " + method.name_ref.str + method.descriptor_ref.str)
-       LOG("!! NATIVE !!")
        var className = canonicalName(cl.this_class.name_ref);
-       if (className in xl.jvm.internalJNITable){
-       if (methodId in xl.jvm.internalJNITable[className]){
+       LOG("Calling " + className + " " + method.name_ref.str + method.descriptor_ref.str)
+       LOG("!! NATIVE !!")
+       if (xl.jvm.internalJNITable[className] && methodId in xl.jvm.internalJNITable[className]){
            result = xl.jvm.internalJNITable[className][methodId].apply(cl,args);
-       }else if (methodId in xl.jvm.JNITable[className][methodId]){
+       }else if (xl.jvm.JNITable[className] && methodId in xl.jvm.JNITable[className]){
            result = xl.jvm.JNITable[className][methodId].apply(cl,args)
        }else{
            PANIC(methodId + " declared as native but not mapped");
        }
-        LOG("Returing from " + xl.className+ " " + method.name_ref.str + method.descriptor_ref.str)
-        }else{
-            PANIC(className + " has no native mappings");
-        }
+        LOG("Returing from " + className + " " + method.name_ref.str + method.descriptor_ref.str)
    }else{
        result = method.invoke(args,cl);
    }
    if (result != undefined){
-       OPPUSH(result.return_object);
+       OPPUSH(result);
    }
 ENDDEF
 
@@ -1455,12 +1451,11 @@ DEFOP(PUTSTATIC)
     var indexbyte2 = READ_NEXT();
     var value = OPPOP();
     
-    CHECK_NULL(objectref)
     var field = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
-    var aClass = field.class_ref.name_ref.str;
+    var aClass = field.class_ref.jvmClassName;
     
     //check if static
-    jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str] = value;
+    xl.jvm.classForName(aClass)[canonicalName(field.class_ref.name_ref) + " " + field.name_and_type_ref.name_ref.str] = value;
 ENDDEF
 
 DEFOP(RET)
@@ -1494,8 +1489,8 @@ DEFOP(SASTORE)
 ENDDEF
 
 DEFOP(SIPUSH)
-    var byte1 = OPPOP();
-    var byte2 = OPPOP();
+    var byte1 = READ_NEXT();
+    var byte2 = READ_NEXT();
     OPPUSH((byte1 << 8) | byte2);
 ENDDEF
 
