@@ -940,9 +940,9 @@ DEFOP(INVOKESTATIC)
        LOG("Calling " + className + " " + method.name_ref.str + method.descriptor_ref.str)
        LOG("!! NATIVE !!")
        if (xl.jvm.internalJNITable[className] && methodId in xl.jvm.internalJNITable[className]){
-           result = xl.jvm.internalJNITable[className][methodId].apply(cl,args);
+           result = {return_object: xl.jvm.internalJNITable[className][methodId].apply(cl,args)};
        }else if (xl.jvm.JNITable[className] && methodId in xl.jvm.JNITable[className]){
-           result = xl.jvm.JNITable[className][methodId].apply(cl,args)
+           result = {return_object: xl.jvm.JNITable[className][methodId].apply(cl,args)};s
        }else{
            PANIC(methodId + " declared as native but not mapped");
        }
@@ -950,8 +950,8 @@ DEFOP(INVOKESTATIC)
    }else{
        result = method.invoke(args,cl);
    }
-   if (result != undefined){
-       OPPUSH(result);
+   if (result != undefined && result.return_object!= undefined){
+       OPPUSH(result.return_object);
    }
 ENDDEF
 
