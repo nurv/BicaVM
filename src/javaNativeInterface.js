@@ -51,7 +51,6 @@ function java_lang_Double_doubleToRawLongBits(d){
 	return new math.Long(y[0],y[1]);
 }
 
-function bicavm_browser_Window_setLocation(s){
+function bicavm_browser_Window_setTitle(s){
 	window.document.title = javaString2JS(s);
 }
-
