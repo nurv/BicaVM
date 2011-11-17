@@ -30,5 +30,8 @@
 	},
 	'java.lang.Double' : {
 		'method doubleToRawLongBits(D)J' : java_lang_Double_doubleToRawLongBits
+	},
+	'bicavm.browser.Window' : {
+		'method setTitle(Ljava/lang/String;)V' : bicavm_browser_Window_setTitle
 	}
  }

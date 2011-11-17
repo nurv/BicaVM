@@ -44,9 +44,14 @@ function java_lang_Float_floatToRawIntBits(f){
 }
 
 //java.lang.Double doubleToRawLongBits(D)J
-	function java_lang_Double_doubleToRawLongBits(d){
+function java_lang_Double_doubleToRawLongBits(d){
 	var x = new ArrayBuffer(32);
 	new Float64Array(x,0)[0] = d;
 	var y = new Int32Array(x,0);
 	return new math.Long(y[0],y[1]);
 }
+
+function bicavm_browser_Window_setLocation(s){
+	window.document.title = javaString2JS(s);
+}
+

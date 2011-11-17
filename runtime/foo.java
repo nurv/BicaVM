@@ -1,7 +1,10 @@
+
+import bicavm.browser.Window;
+
 public class foo{
     public static void main(String[] args){
-        String hello = "hello";
-        String world = "world";
-        String together = hello + world;
+        String hello = "bicavm";
+        String world = "changed this title";
+        Window.setTitle(hello + world);
     }
 }
