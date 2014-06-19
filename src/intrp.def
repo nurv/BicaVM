@@ -891,17 +891,25 @@ ENDDEF
 DEFOP(INVOKEINTERFACE)
    var indexbyte1 = READ_NEXT();
    var indexbyte2 = READ_NEXT();
-   var count = READ_NEXT();
-   /* expected 0*/ READ_NEXT();
-   var args = [];
 
-   var method = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
-   for(var i=0; i<method.descriptor.args.length; i++){
-       args.push(OPPOP());
+   var methodDesrc = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
+   var cl = xl.jvm.classForName(methodDesrc.class_ref.jvmClassName);
+   var methodId = "method " + methodDesrc.name_and_type_ref.name_ref.str +  methodDesrc.name_and_type_ref.descriptor_ref.str
+   var method = cl[methodId];
+   var args = OPSTACK_MULTIPOP(OPSTACK_LENGTH() - method.descriptor.args.length - 1);
+   var thisObject = args[0];
+   var thisClass = thisObject.class;
+   method = thisClass[methodId];
+   cl = method.dec_class;
+   var result;
+   if(method.access_flags & ACC_NATIVE){
+       PANIC("INVOKEINTERFACE NATIVE CALL")
+   }else{
+       result = method.invoke(args,cl);
    }
-   var objectref = OPPOP();
-   
-   PANIC("NOT IMPLEMENTED YET");
+   if (result != undefined){
+       OPPUSH(result.return_object);
+   }
 ENDDEF
 
 DEFOP(INVOKESPECIAL)
@@ -958,13 +966,16 @@ ENDDEF
 DEFOP(INVOKEVIRTUAL)
    var indexbyte1 = READ_NEXT();
    var indexbyte2 = READ_NEXT();
-   var args = [];
 
    var methodDesrc = xl.constantPool.get((indexbyte1 << 8) | indexbyte2);
    var cl = xl.jvm.classForName(methodDesrc.class_ref.jvmClassName);
    var methodId = "method " + methodDesrc.name_and_type_ref.name_ref.str +  methodDesrc.name_and_type_ref.descriptor_ref.str
    var method = cl[methodId];
    var args = OPSTACK_MULTIPOP(OPSTACK_LENGTH() - method.descriptor.args.length - 1);
+   var thisObject = args[0];
+   var thisClass = thisObject.class;
+   method = thisClass[methodId];
+   cl = method.dec_class;
    var result;
    if(method.access_flags & ACC_NATIVE){
        PANIC("INVOKEVIRTUAL NATIVE CALL")
